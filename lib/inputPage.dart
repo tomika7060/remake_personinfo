@@ -7,7 +7,7 @@ class InputPage extends StatelessWidget{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('aaaaa'),
+        title: Text('入力ページ'),
       ),
       body: Column(
         children: [

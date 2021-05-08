@@ -38,11 +38,11 @@ class MyApp extends StatelessWidget {
           final tabItems =[
             const BottomNavigationBarItem(
                 icon: Icon(Icons.home),
-                label: '',
+                label: 'ホーム',
             ),
             const BottomNavigationBarItem(
                 icon: Icon(Icons.calendar_today),
-                label: '',
+                label: 'カレンダー',
             )
           ];
           return Scaffold(

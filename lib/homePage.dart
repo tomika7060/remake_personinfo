@@ -9,7 +9,7 @@ class HomePage extends StatelessWidget{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('aaaaa'),
+        title: Text('ホーム'),
       ),
       body: ListDisplay(),
       floatingActionButton: FloatingActionButton(
