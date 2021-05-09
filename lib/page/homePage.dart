@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:widgetsampule/Widget.dart';
-import 'package:widgetsampule/inputPage.dart';
+import 'package:widgetsampule/Widget/Widget.dart';
+import 'package:widgetsampule/page/inputPage.dart';
 
 
 
@@ -11,7 +11,7 @@ class HomePage extends StatelessWidget{
       appBar: AppBar(
         title: Text('ホーム'),
       ),
-      body: ListDisplay(),
+      body: ListFireStore(),
       floatingActionButton: FloatingActionButton(
         child: Icon(
           Icons.add,
