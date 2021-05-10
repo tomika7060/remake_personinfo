@@ -42,7 +42,6 @@ class TextFormEdit extends StatelessWidget{
                       ),
                     ),
                   ] ),
-
             ],
           );
         });
@@ -174,6 +173,7 @@ class TextControlEdit extends ChangeNotifier {
         'メモ1':memo1Controller,
         'メモ2':memo2Controller,
         'メモ3':memo3Controller,
+
       };
 
 }

@@ -7,11 +7,11 @@ import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-final _listFirebaseProvider=ChangeNotifierProvider(
+final _listFirebaseProvider=ChangeNotifierProvider.autoDispose(
       (ref) => ListChangeFirebase(),
 );
 
-final _imageProvider=ChangeNotifierProvider(
+final _imageProvider=ChangeNotifierProvider.autoDispose(
       (ref) => ImageFunc(),
 );
 
@@ -42,6 +42,7 @@ class TextForm extends StatelessWidget{
                          ),))),
                 Flexible(
                   child: TextField(
+                    autofocus: (category=='名前') ? true:false,
                     controller: watch(_textControlProvider)
                         .getFirebaseKey()[category],
                     decoration: InputDecoration(
@@ -112,6 +113,17 @@ class ListChangeFirebase extends ChangeNotifier{
     }
   }
 
+  void storageDelete(name)async{
+    final storage = FirebaseStorage.instance;
+    storage
+        .ref()
+        .child('users')
+        .child('user[qSPMM3xhfdp3Friamfv7]')
+        .child(name)
+        .delete();
+  }
+
+
   void listAdd (Map<String, TextEditingController> map ){
 
       stream.add({
@@ -124,6 +136,7 @@ class ListChangeFirebase extends ChangeNotifier{
         'メモ2':map['メモ2'].text,
         'メモ3':map['メモ3'].text,
         'imageUrl':imageUrl,
+        'CreatedAt':Timestamp.now(),
     });
   }
   void listDelete(document){
@@ -205,20 +218,36 @@ class ImageForm extends StatelessWidget{
         icon: Icon(Icons.account_circle),
         color: Colors.grey,
         iconSize: 120.0,
-        onPressed: () {
-          watch(_imageProvider).showBottomSheet(context);
-        },
+        onPressed: () async{
+          try {
+            watch(_listFirebaseProvider).nameCheck(context.read(_textControlProvider).nameController.text);
+            watch(_imageProvider).showBottomSheet(context, context
+                .read(_textControlProvider)
+                .nameController
+                .text);
+          }catch(e){
+            watch(_imageProvider).alertFunc(context, e);
+          }
+          },
       )
           : Column(
-        children: [
+           children: [
           SizedBox(
             height: 20,
           ),
           ClipOval(
             child: GestureDetector(
               onTap: (){
-                watch(_imageProvider).showBottomSheet(context);
-              },
+                try {
+                  watch(_listFirebaseProvider).nameCheck(context.read(_textControlProvider).nameController.text);
+                  watch(_imageProvider).showBottomSheet(context, context
+                      .read(_textControlProvider)
+                      .nameController
+                      .text);
+                }catch(e){
+                  watch(_imageProvider).alertFunc(context,e);
+                }
+                },
               child: Image.memory(
                 watch(_imageProvider)._image.readAsBytesSync(),
                 width: 100,
@@ -230,7 +259,6 @@ class ImageForm extends StatelessWidget{
         ],
       );
     }
-
     );
   }
 }
@@ -243,19 +271,44 @@ class ImageFunc extends ChangeNotifier{
   String imageName;
   final picker = ImagePicker();
 
-  Future<String> _uploadImage(_image) async {
+  dynamic alertFunc(context,e){
+    showDialog(
+        context: context,
+        builder: (BuildContext context){
+          return AlertDialog(
+            title: Text(e.toString()),
+            actions: <Widget>[
+              TextButton(
+                  onPressed: (){
+                    Navigator.pop(context);
+                  },
+                  child: Text('OK')
+              ),
+            ],
+          );
+        }
+    );
+    notifyListeners();
+  }
+
+  Future<String> _uploadImage(_image,name) async {
     if ( _image == null) {
       return '';
     }
     else {
-      final storage = FirebaseStorage.instance;
-      TaskSnapshot snapshot = await storage
-          .ref()
-          .child('users')
-          .child('user[qSPMM3xhfdp3Friamfv7]')
-          .putFile(_image);
-      final String downloadUrl = await snapshot.ref.getDownloadURL();
-      return downloadUrl;
+      if(name!='') {
+        final storage = FirebaseStorage.instance;
+        TaskSnapshot snapshot = await storage
+            .ref()
+            .child('users')
+            .child('user[qSPMM3xhfdp3Friamfv7]')
+            .child(name)
+            .putFile(_image);
+        final String downloadUrl = await snapshot.ref.getDownloadURL();
+        return downloadUrl;
+      }else{
+        throw('名前を入力してください');
+      }
     }
   }
 
@@ -297,7 +350,7 @@ class ImageFunc extends ChangeNotifier{
         );
   }
 
-  void showBottomSheet(context) async {
+  void showBottomSheet(context,name) async {
     //ボトムシートから受け取った値によって操作を変える
     final result = await showCupertinoBottomBar(context);
     File imageFile;
@@ -307,7 +360,7 @@ class ImageFunc extends ChangeNotifier{
       imageFile = await ImageUpload(ImageSource.gallery).getImageFromDevice();
     }
     _image = imageFile;
-    imageUrl= await _uploadImage(_image);
+    imageUrl= await _uploadImage(_image,name);
     print(imageUrl);
     notifyListeners();
   }

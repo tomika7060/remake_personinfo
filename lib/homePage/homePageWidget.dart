@@ -47,8 +47,14 @@ class ListFireStore extends StatelessWidget{
                               )
                             ],
                             child: ListTile(
-                              leading: Icon(Icons.account_circle,
-                                size: 45,),
+                              leading: (document['imageUrl'] == '' || document['imageUrl']==null ) ? Icon(Icons.account_circle,
+                                size: 45,):ClipOval(
+                                  child: Image.network(document['imageUrl'],
+                                    fit: BoxFit.fill,
+                                    height: 50,
+                                    width: 50,
+                                  )
+                              ),
                               title: Text(document['名前'],
                                 style: TextStyle(
                                     fontSize: 22
@@ -84,6 +90,7 @@ class ListFireStore extends StatelessWidget{
               TextButton(
                   onPressed: (){
                     context.read(_listFirebaseProvider).listDelete(document);
+                    context.read(_listFirebaseProvider).storageDelete(document['名前']);
                     Navigator.pop(context);
                   },
                   child: Text('はい')
