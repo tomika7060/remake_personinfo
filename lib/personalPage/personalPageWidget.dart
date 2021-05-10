@@ -1,0 +1,180 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final _listFirebaseProvider=ChangeNotifierProvider(
+      (ref) => ListChangeFirebaseEdit(),
+);
+
+final _textControlProvider =ChangeNotifierProvider.autoDispose(
+      (ref) => TextControlEdit(),
+);
+
+
+class TextFormEdit extends StatelessWidget{
+  DocumentSnapshot<Object> document;
+  String category;
+  TextFormEdit(this.document,this.category);
+
+  @override
+  Widget build(BuildContext context) {
+    //ここでテキストコントローラーに初期値を渡している
+    context.read(_textControlProvider).getFirebaseKey()[category].text=document[category];
+    return Consumer(
+        builder: (context,watch,child) {
+          return Column(
+            children: [
+              Row(
+                  children:[
+                    ConstrainedBox(
+                        constraints: BoxConstraints.tight(Size(70,70)),
+                        child: Center(child: Text('$category : ',
+                        style: TextStyle(
+                          fontSize: 15,
+                        ),))),
+                    Flexible(
+                      child: TextField(
+                        controller: watch(_textControlProvider)
+                            .getFirebaseKey()[category],
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                  ] ),
+
+            ],
+          );
+        });
+  }
+}
+
+class TextFormMultilineEdit extends StatelessWidget{
+  DocumentSnapshot<Object> document;
+  String category;
+  TextFormMultilineEdit(this.document,this.category);
+
+  @override
+  Widget build(BuildContext context) {
+    context.read(_textControlProvider).getFirebaseKey()[category].text=document[category];
+    return Consumer(
+        builder: (context,watch,child) {
+          return Column(
+            children: [
+              Row(
+                  children:[
+                    ConstrainedBox(
+                        constraints: BoxConstraints.tight(Size(70,70)),
+                        child: Center(
+                            child: Text('$category : ',
+                            style: TextStyle(
+                            fontSize: 15,
+                            ),))),
+                    Flexible(
+                      child: TextField(
+                        controller: watch(_textControlProvider)
+                            .getFirebaseKey()[category],
+                        keyboardType: TextInputType.multiline,
+                        maxLines: null,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                  ] ),
+            ],
+          );
+        });
+  }
+}
+
+
+class ListChangeFirebaseEdit extends ChangeNotifier{
+  CollectionReference<Map<String, dynamic>> _stream = FirebaseFirestore.instance
+      .collection('users').doc('qSPMM3xhfdp3Friamfv7')
+      .collection('info');
+  CollectionReference<Map<String, dynamic>> get stream =>_stream;
+
+  void nameCheck(String text){
+    if(text.isEmpty){
+      throw('名前を入力してください');
+    }
+  }
+  void listUpdate(String id,Map<String, TextEditingController> map ){
+
+    stream.doc(id).update({
+      '名前':map['名前'].text,
+      '所属':map['所属'].text,
+      '電話番号':map['電話番号'].text,
+      'メールアドレス':map['メールアドレス'].text,
+      '趣味':map['趣味'].text,
+      'メモ1':map['メモ1'].text,
+      'メモ2':map['メモ2'].text,
+      'メモ3':map['メモ3'].text,
+    });
+  }
+}
+
+class AddButtonEdit extends StatelessWidget{
+  String id;
+  AddButtonEdit(this.id);
+  @override
+  Widget build(BuildContext context) {
+    return Consumer(
+        builder: (context,watch,child){
+          return ElevatedButton(
+              onPressed:()async{
+                try{
+                  context.read(_listFirebaseProvider).nameCheck(context.read(_textControlProvider).nameController.text);
+                  context.read(_listFirebaseProvider).listUpdate(id,context.read(_textControlProvider).getFirebaseKey());
+                  Navigator.pop(context);
+                }
+                catch(e){
+                  await showDialog(
+                      context: context,
+                      builder: (BuildContext context){
+                        return AlertDialog(
+                          title: Text(e.toString()),
+                          actions: <Widget>[
+                            TextButton(
+                                onPressed: (){
+                                  Navigator.pop(context);
+                                },
+                                child: Text('OK')
+                            ),
+                          ],
+                        );
+                      }
+                  );
+                }
+              },
+              child: Text('追加'));}
+    );
+  }
+}
+
+class TextControlEdit extends ChangeNotifier {
+  String text;
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController belongsController = TextEditingController();
+  final TextEditingController telController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController hobbyController = TextEditingController();
+  final TextEditingController memo1Controller = TextEditingController();
+  final TextEditingController memo2Controller = TextEditingController();
+  final TextEditingController memo3Controller = TextEditingController();
+
+  Map<String ,TextEditingController> getFirebaseKey() =>
+      {
+        '名前': nameController,
+        '所属':belongsController,
+        '電話番号':telController,
+        'メールアドレス':addressController,
+        '趣味':hobbyController,
+        'メモ1':memo1Controller,
+        'メモ2':memo2Controller,
+        'メモ3':memo3Controller,
+      };
+
+}
+

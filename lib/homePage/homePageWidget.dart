@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:widgetsampule/inputPage/inputPageWidget.dart';
+import 'package:widgetsampule/personalPage/personalPage.dart';
 
 
 final _listFirebaseProvider=ChangeNotifierProvider(
@@ -55,7 +56,12 @@ class ListFireStore extends StatelessWidget{
                               trailing: IconButton(
                                 icon: Icon(Icons.arrow_forward_ios,
                                   size: 35,),
-                                onPressed: (){},
+                                onPressed: (){
+                                  Navigator.push(
+                                    context, 
+                                    MaterialPageRoute(builder: (context) => PersonalPage(document))
+                                  );
+                                },
                               ),
                             ),
                             actionPane: SlidableScrollActionPane(),

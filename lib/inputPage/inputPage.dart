@@ -13,6 +13,7 @@ class InputPage extends StatelessWidget{
       body: SingleChildScrollView(
         child: Column(
           children: [
+            ImageForm(),
             SizedBox(
               height: 20,
             ),

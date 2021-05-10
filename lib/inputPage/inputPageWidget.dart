@@ -1,20 +1,29 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 final _listFirebaseProvider=ChangeNotifierProvider(
       (ref) => ListChangeFirebase(),
+);
+
+final _imageProvider=ChangeNotifierProvider(
+      (ref) => ImageFunc(),
 );
 
 final _textControlProvider =ChangeNotifierProvider.autoDispose(
     (ref) => TextControl(),
 );
 
+String imageUrl;
 
 class TextForm extends StatelessWidget{
-  String category='';
+  String category;
+
   TextForm(this.category);
 
   @override
@@ -27,7 +36,10 @@ class TextForm extends StatelessWidget{
               children:[
                 ConstrainedBox(
                   constraints: BoxConstraints.tight(Size(70,70)),
-                    child: Text('$category : ')),
+                    child: Center(child: Text('$category : ',
+                    style: TextStyle(
+                    fontSize: 15,
+                         ),))),
                 Flexible(
                   child: TextField(
                     controller: watch(_textControlProvider)
@@ -61,7 +73,11 @@ class TextFormMultiline extends StatelessWidget{
                   children:[
                     ConstrainedBox(
                         constraints: BoxConstraints.tight(Size(70,70)),
-                        child: Text('$category : ')),
+                        child: Center(
+                            child: Text('$category : ',
+                            style: TextStyle(
+                            fontSize: 15,
+                            ),))),
                     Flexible(
                       child: TextField(
                         controller: watch(_textControlProvider)
@@ -95,6 +111,7 @@ class ListChangeFirebase extends ChangeNotifier{
       throw('名前を入力してください');
     }
   }
+
   void listAdd (Map<String, TextEditingController> map ){
 
       stream.add({
@@ -106,6 +123,7 @@ class ListChangeFirebase extends ChangeNotifier{
         'メモ1':map['メモ1'].text,
         'メモ2':map['メモ2'].text,
         'メモ3':map['メモ3'].text,
+        'imageUrl':imageUrl,
     });
   }
   void listDelete(document){
@@ -176,5 +194,143 @@ class TextControl extends ChangeNotifier {
 
 }
 
+//↓画像関係
 
+class ImageForm extends StatelessWidget{
+  @override
+  Widget build(BuildContext context) {
+    return Consumer(builder: (context,watch,child){
+      return (watch(_imageProvider)._image == null) ?
+      IconButton(
+        icon: Icon(Icons.account_circle),
+        color: Colors.grey,
+        iconSize: 120.0,
+        onPressed: () {
+          watch(_imageProvider).showBottomSheet(context);
+        },
+      )
+          : Column(
+        children: [
+          SizedBox(
+            height: 20,
+          ),
+          ClipOval(
+            child: GestureDetector(
+              onTap: (){
+                watch(_imageProvider).showBottomSheet(context);
+              },
+              child: Image.memory(
+                watch(_imageProvider)._image.readAsBytesSync(),
+                width: 100,
+                height: 100,
+                fit: BoxFit.fill,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    );
+  }
+}
+
+
+
+class ImageFunc extends ChangeNotifier{
+
+  File _image;
+  String imageName;
+  final picker = ImagePicker();
+
+  Future<String> _uploadImage(_image) async {
+    if ( _image == null) {
+      return '';
+    }
+    else {
+      final storage = FirebaseStorage.instance;
+      TaskSnapshot snapshot = await storage
+          .ref()
+          .child('users')
+          .child('user[qSPMM3xhfdp3Friamfv7]')
+          .putFile(_image);
+      final String downloadUrl = await snapshot.ref.getDownloadURL();
+      return downloadUrl;
+    }
+  }
+
+
+  Future<int> showCupertinoBottomBar(context) {
+    //選択するためのボトムシートを表示
+    return showCupertinoModalPopup<int>(
+        context: context,
+        builder: (BuildContext context) {
+          return CupertinoActionSheet(
+            message: Text('写真をアップロードしますか？'),
+            actions: <Widget>[
+              CupertinoActionSheetAction(
+                child: Text(
+                  'カメラで撮影',
+                ),
+                onPressed: () {
+                  Navigator.pop(context, 0);
+                },
+              ),
+              CupertinoActionSheetAction(
+                child: Text(
+                  'アルバムから選択',
+                ),
+                onPressed: () {
+                  Navigator.pop(context, 1);
+                },
+              ),
+            ],
+            cancelButton: CupertinoActionSheetAction(
+              child: const Text('キャンセル'),
+              onPressed: () {
+                Navigator.pop(context, 2);
+              },
+              isDefaultAction: true,
+            ),
+          );
+        }
+        );
+  }
+
+  void showBottomSheet(context) async {
+    //ボトムシートから受け取った値によって操作を変える
+    final result = await showCupertinoBottomBar(context);
+    File imageFile;
+    if (result == 0) {
+      imageFile = await ImageUpload(ImageSource.camera).getImageFromDevice();
+    } else if (result == 1) {
+      imageFile = await ImageUpload(ImageSource.gallery).getImageFromDevice();
+    }
+    _image = imageFile;
+    imageUrl= await _uploadImage(_image);
+    print(imageUrl);
+    notifyListeners();
+  }
+}
+
+class ImageUpload {
+  ImageUpload(this.inputSource, {this.inputQuality = 50});
+  final ImageSource inputSource;
+  final int inputQuality;
+  Future<File> getImageFromDevice() async {
+    // 撮影/選択したFileが返ってくる
+    final imageInputFile = await ImagePicker().getImage(source: inputSource);
+    // Androidで撮影せずに閉じた場合はnullになる
+    if (imageInputFile == null) {
+      return null;
+    }
+    //画像を圧縮
+    final File compressedFile = await FlutterNativeImage.compressImage(
+        imageInputFile.path,
+        quality: inputQuality);
+    return compressedFile;
+  }
+}
+
+//↑画像関係
 
