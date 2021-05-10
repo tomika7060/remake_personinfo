@@ -1,8 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:widgetsampule/Page/calender.dart';
-import 'package:widgetsampule/Page/homePage.dart';
+import 'package:widgetsampule/calender/calender.dart';
+import 'package:widgetsampule/homePage/homePage.dart';
+
+
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();

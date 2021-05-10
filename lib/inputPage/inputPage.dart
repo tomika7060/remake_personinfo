@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:widgetsampule/Widget/inputPageWidget.dart';
+import 'package:widgetsampule/inputPage/inputPageWidget.dart';
+
 
 class InputPage extends StatelessWidget{
   @override

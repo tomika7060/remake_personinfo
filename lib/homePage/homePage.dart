@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:widgetsampule/Widget/homePageWidget.dart';
-import 'package:widgetsampule/page/inputPage.dart';
+import 'package:widgetsampule/homePage/homePageWidget.dart';
+import 'package:widgetsampule/inputPage/inputPage.dart';
+
 
 
 
