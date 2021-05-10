@@ -9,14 +9,46 @@ class InputPage extends StatelessWidget{
       appBar: AppBar(
         title: Text('入力ページ'),
       ),
-      body: Column(
-        children: [
-          SizedBox(
-            height: 20,
-          ),
-          TextForm(),
-          AddButton(),
-        ],
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            SizedBox(
+              height: 20,
+            ),
+            Text('基本情報'),
+            Card(
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: 5,
+                    ),
+                    TextForm('名前'),
+                    TextForm('所属'),
+                    TextForm('電話番号'),
+                    TextForm('メールアドレス'),
+                    TextForm('趣味'),
+                  ],
+                )
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            Text('自由'),
+            Card(
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 5,
+                  ),
+                  TextFormMultiline('メモ1'),
+                  TextFormMultiline('メモ2'),
+                  TextFormMultiline('メモ3'),
+                ],
+              ),
+            ),
+            AddButton(),
+          ],
+        ),
       )
     );
   }
