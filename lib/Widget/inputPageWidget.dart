@@ -3,11 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
-
 
 final _listFirebaseProvider=ChangeNotifierProvider(
-    (ref) => ListChangeFirebase(),
+      (ref) => ListChangeFirebase(),
 );
 
 final _textControlProvider =ChangeNotifierProvider.autoDispose(
@@ -18,7 +16,6 @@ final _textControlProvider =ChangeNotifierProvider.autoDispose(
 class TextForm extends StatelessWidget{
   String category='';
   TextForm(this.category);
-
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +51,6 @@ class TextFormMultiline extends StatelessWidget{
   String category='';
   TextFormMultiline(this.category);
 
-
   @override
   Widget build(BuildContext context) {
     return Consumer(
@@ -87,35 +83,6 @@ class TextFormMultiline extends StatelessWidget{
   }
 }
 
-class ListDisplay extends StatelessWidget{
-  @override
-  Widget build(BuildContext context) {
-    return Consumer(
-        builder: (context,watch,child) {
-          return ListView.builder(
-              itemCount: watch(_listProvider).listItems.length,
-              itemBuilder: (context,index){
-                return ListTile(
-                    leading: Icon(Icons.account_circle,
-                    size: 45,),
-                    title: Text(watch(_listProvider).listItems[index],
-                    style: TextStyle(
-                      fontSize: 22
-                    ),
-                    ),
-                  trailing: IconButton(
-                    icon: Icon(Icons.arrow_forward_ios,
-                    size: 35,),
-                    onPressed: (){
-                      //todo
-                    },
-                  ),
-                );
-              }
-          );
-        } );
-  }
-}
 
 class ListChangeFirebase extends ChangeNotifier{
   CollectionReference<Map<String, dynamic>> _stream = FirebaseFirestore.instance
@@ -128,10 +95,18 @@ class ListChangeFirebase extends ChangeNotifier{
       throw('名前を入力してください');
     }
   }
-  void listAdd (String text){
-       stream.add({
-      'name': text,
-       });
+  void listAdd (Map<String, TextEditingController> map ){
+
+      stream.add({
+        '名前':map['名前'].text,
+        '所属':map['所属'].text,
+        '電話番号':map['電話番号'].text,
+        'メールアドレス':map['メールアドレス'].text,
+        '趣味':map['趣味'].text,
+        'メモ1':map['メモ1'].text,
+        'メモ2':map['メモ2'].text,
+        'メモ3':map['メモ3'].text,
+    });
   }
   void listDelete(document){
     stream.doc(document.id)
@@ -148,10 +123,8 @@ class AddButton extends StatelessWidget{
           onPressed:()async{
             try{
               context.read(_listFirebaseProvider).nameCheck(context.read(_textControlProvider).nameController.text);
-              context.read(_listFirebaseProvider).listAdd(context
-                  .read(_textControlProvider)
-                  .nameController
-                  .text);
+              context.read(_listFirebaseProvider).listAdd(context.read(_textControlProvider).getFirebaseKey());
+              Navigator.pop(context);
             }
             catch(e){
              await showDialog(
@@ -171,7 +144,6 @@ class AddButton extends StatelessWidget{
                   }
               );
             }
-            Navigator.pop(context);
           },
           child: Text('追加'));}
     );
@@ -190,7 +162,7 @@ class TextControl extends ChangeNotifier {
   final TextEditingController memo2Controller = TextEditingController();
   final TextEditingController memo3Controller = TextEditingController();
 
-  getFirebaseKey() =>
+  Map<String ,TextEditingController> getFirebaseKey() =>
       {
         '名前': nameController,
         '所属':belongsController,
@@ -204,108 +176,5 @@ class TextControl extends ChangeNotifier {
 
 }
 
-class ListFireStore extends StatelessWidget{
-  @override
-  Widget build(BuildContext context) {
-    return Consumer(
-        builder: (context,watch,child) {
-          return StreamBuilder<QuerySnapshot>(
-            stream: watch(_listFirebaseProvider).stream.snapshots(),
-              builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
-              if(snapshot.hasError) return Text('Error: ${snapshot.error}');
-              switch (snapshot.connectionState){
-                case ConnectionState.waiting:
-                  return Text('Loading...');
-                default:
-                  return ListView(
-                    children: snapshot.data.docs.map((DocumentSnapshot document){
-                      return Slidable(
-                        key: Key(document['name']),
-                        dismissal: SlidableDismissal(
-                          dragDismissible: false,
-                          child: SlidableDrawerDismissal(),
-                          dismissThresholds: <SlideActionType, double>{
-                            // 右dismissal(スワイプ)をキャンセルする(1.0にセットする)
-                            SlideActionType.secondary: 1.0
-                          },
-                        ),
-                        actions: <Widget>[
-                          IconSlideAction(
-                            caption: 'Delete',
-                            color: Colors.red,
-                            icon: Icons.delete,
-                            onTap: () {
-                              alertShow(context,document);
-                            },
-                          )
-                        ],
-                        child: ListTile(
-                          leading: Icon(Icons.account_circle,
-                            size: 45,),
-                          title: Text(document['name'],
-                            style: TextStyle(
-                                fontSize: 22
-                            ),),
-                          trailing: IconButton(
-                            icon: Icon(Icons.arrow_forward_ios,
-                              size: 35,),
-                            onPressed: (){},
-                          ),
-                        ),
-                        actionPane: SlidableScrollActionPane(),
-                      );
-                    }).toList()
-                  );
-              }
-              }
-        );
-        });
-  }
 
-  alertShow(context,document){
-    showDialog(
-        context: context,
-        builder: (BuildContext context){
-          return AlertDialog(
-            title: Text('削除しますか?'),
-            actions: <Widget>[
-              TextButton(
-                  onPressed: (){
-                    context.read(_listFirebaseProvider).listDelete(document);
-                    Navigator.pop(context);
-                  },
-                  child: Text('はい')
-              ),
-              TextButton(
-                  onPressed: (){
-                    Navigator.pop(context);
-                  },
-                  child: Text('いいえ')
-              ),
-            ],
-          );
-        }
-    );
-  }
-}
-
-
-//とりあえず現状使ってない
-
-final _listProvider =ChangeNotifierProvider(
-      (ref) => ListChange(),);
-
-class ListChange extends ChangeNotifier{
-
-  var _listItems = ["aaaaa"];
-
-  List get listItems => _listItems;
-
-  void listAdd(String text){
-    //firebaseに書き込む処理に今後変更
-    _listItems.add(text);
-    notifyListeners();
-  }
-  void listDelete(){}
-}
 

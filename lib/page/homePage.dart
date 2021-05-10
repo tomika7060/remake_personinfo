@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:widgetsampule/Widget/Widget.dart';
+import 'package:widgetsampule/Widget/homePageWidget.dart';
 import 'package:widgetsampule/page/inputPage.dart';
 
 
