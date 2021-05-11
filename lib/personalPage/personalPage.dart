@@ -13,6 +13,7 @@ class PersonalPage extends StatelessWidget{
       body: SingleChildScrollView(
         child: Column(
           children: [
+            ImageFormEdit(document['imageUrl']),
             SizedBox(
               height: 20,
             ),

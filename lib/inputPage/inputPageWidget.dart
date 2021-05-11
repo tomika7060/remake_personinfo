@@ -288,7 +288,6 @@ class ImageFunc extends ChangeNotifier{
           );
         }
     );
-    notifyListeners();
   }
 
   Future<String> _uploadImage(_image,name) async {
@@ -361,7 +360,6 @@ class ImageFunc extends ChangeNotifier{
     }
     _image = imageFile;
     imageUrl= await _uploadImage(_image,name);
-    print(imageUrl);
     notifyListeners();
   }
 }
