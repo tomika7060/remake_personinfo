@@ -10,7 +10,6 @@ final _listFirebaseProvider=ChangeNotifierProvider(
       (ref) => ListChangeFirebase(),
 );
 
-
 class ListFireStore extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
