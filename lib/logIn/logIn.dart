@@ -5,7 +5,6 @@ import 'package:widgetsampule/logIn/mail.dart';
 
 class AuthScreen extends StatelessWidget {
   static final facebookLogin = FacebookLogin();
-  final _passwordFocusNode = FocusNode();
   final _form = GlobalKey<FormState>();
   String _email;
   String _password;
@@ -64,12 +63,21 @@ class AuthScreen extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: (){
-                Navigator.push(context, 
-                MaterialPageRoute(builder: (context)=>
-                MailLoginPage())
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context)=>
+                        MailAuth())
                 );
               },
               child: Text('メールアドレスでログイン'),
+            ),
+            ElevatedButton(
+              onPressed: (){
+                Navigator.push(context, 
+                MaterialPageRoute(builder: (context)=>
+                AcountCreate())
+                );
+              },
+              child: Text('メールアドレスでアカウントを作成'),
             ),
           ],
         ),

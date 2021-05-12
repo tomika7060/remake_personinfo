@@ -3,21 +3,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 
 
-class MailLoginPage extends StatefulWidget {
-  
-  
-
+class AcountCreate extends StatefulWidget {
   @override
-  _MailLoginPageState createState() => _MailLoginPageState();
+  _AcountCreateState createState() => _AcountCreateState();
 }
 
-class _MailLoginPageState extends State<MailLoginPage> {
+class _AcountCreateState extends State<AcountCreate> {
   @override
   Widget build(BuildContext context) {
     final _passwordFocusNode = FocusNode();
     final _form = GlobalKey<FormState>();
     String _email;
     String _password;
+    String _passwordCheck;
     bool _isLogin = false;
 
     Future<void> trySubmit() async {
@@ -65,12 +63,12 @@ class _MailLoginPageState extends State<MailLoginPage> {
               },
             ),
             TextFormField(
-              decoration: InputDecoration(labelText: 'password'),
+              decoration: InputDecoration(labelText: 'パスワードを入力してください'),
               obscureText: true,
               focusNode: _passwordFocusNode,
               validator: (value) {
                 if (value.isEmpty) {
-                  return 'Please enter a password.';
+                  return 'パスワードを入力してください';
                 }
                 return null;
               },
@@ -78,14 +76,38 @@ class _MailLoginPageState extends State<MailLoginPage> {
                 _password = value;
               },
             ),
-            FlatButton(
-              child: Text('Save'),
-              color: Colors.grey,
-              onPressed: trySubmit,
+            TextFormField(
+              decoration: InputDecoration(labelText: 'パスワードを再入力してください'),
+              obscureText: true,
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'パスワードを入力してください';
+                }
+                return null;
+              },
+              onSaved: (value) {
+                _passwordCheck = value;
+              },
+            ),
+            ElevatedButton(
+              child: Text('作成'),
+              onPressed: (){
+                (_password==_passwordCheck) ?
+                   trySubmit():
+                    print('パスワードが一致しません');
+                Navigator.pop(context);
+              }
             ),
           ],
         ),
       ),
     );
+  }
+}
+
+class MailAuth extends StatelessWidget{
+  @override
+  Widget build(BuildContext context) {
+    return Container();
   }
 }
