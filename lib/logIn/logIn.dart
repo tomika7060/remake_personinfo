@@ -72,9 +72,9 @@ class AuthScreen extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: (){
-                Navigator.push(context, 
-                MaterialPageRoute(builder: (context)=>
-                AcountCreate())
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context)=>
+                        AccountCreate())
                 );
               },
               child: Text('メールアドレスでアカウントを作成'),

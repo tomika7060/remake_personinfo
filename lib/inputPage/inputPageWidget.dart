@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+
 
 final _listFirebaseProvider=ChangeNotifierProvider.autoDispose(
       (ref) => ListChangeFirebase(),
@@ -19,7 +21,9 @@ final _textControlProvider =ChangeNotifierProvider.autoDispose(
     (ref) => TextControl(),
 );
 
+
 String imageUrl;
+final String uid=FirebaseAuth.instance.currentUser.uid;
 
 class TextForm extends StatelessWidget{
   String category;
@@ -103,7 +107,7 @@ class TextFormMultiline extends StatelessWidget{
 
 class ListChangeFirebase extends ChangeNotifier{
   CollectionReference<Map<String, dynamic>> _stream = FirebaseFirestore.instance
-      .collection('users').doc('qSPMM3xhfdp3Friamfv7')
+      .collection('users').doc(uid)
       .collection('info');
   CollectionReference<Map<String, dynamic>> get stream =>_stream;
 
@@ -118,7 +122,7 @@ class ListChangeFirebase extends ChangeNotifier{
     storage
         .ref()
         .child('users')
-        .child('user[qSPMM3xhfdp3Friamfv7]')
+        .child('user[$uid]')
         .child(name)
         .delete();
   }
@@ -300,7 +304,7 @@ class ImageFunc extends ChangeNotifier{
         TaskSnapshot snapshot = await storage
             .ref()
             .child('users')
-            .child('user[qSPMM3xhfdp3Friamfv7]')
+            .child('user[$uid]')
             .child(name)
             .putFile(_image);
         final String downloadUrl = await snapshot.ref.getDownloadURL();
