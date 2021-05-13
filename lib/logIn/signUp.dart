@@ -7,7 +7,7 @@ class AccountCreate extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('ログインページ'),
+        title: Text('Sing Up'),
       ),
       body: Column(
         children: [
@@ -18,13 +18,5 @@ class AccountCreate extends StatelessWidget {
         ],
       )
     );
-  }
-
-}
-
-class MailAuth extends StatelessWidget{
-  @override
-  Widget build(BuildContext context) {
-    return Container();
   }
 }

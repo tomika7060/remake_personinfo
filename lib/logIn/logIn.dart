@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:widgetsampule/logIn/mail.dart';
+import 'package:widgetsampule/logIn/signIn.dart';
+import 'package:widgetsampule/logIn/signUp.dart';
 
 class AuthScreen extends StatelessWidget {
   static final facebookLogin = FacebookLogin();
@@ -31,13 +32,10 @@ class AuthScreen extends StatelessWidget {
     }
   }
   Future<void> trySubmit() async {
-
     if (!_form.currentState.validate()) {
       return;
     }
-
     _form.currentState.save();
-
     final auth = FirebaseAuth.instance;
     if (_isLogin) {
       final result = await auth.signInWithEmailAndPassword(email: _email, password: _password);

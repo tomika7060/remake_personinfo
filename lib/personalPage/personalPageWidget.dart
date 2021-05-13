@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:widgetsampule/inputPage/inputPageWidget.dart';
 
 final _listFirebaseProvider=ChangeNotifierProvider.autoDispose(
       (ref) => ListChangeFirebaseEdit(),
@@ -101,7 +102,7 @@ class TextFormMultilineEdit extends StatelessWidget{
 
 class ListChangeFirebaseEdit extends ChangeNotifier{
   CollectionReference<Map<String, dynamic>> _stream = FirebaseFirestore.instance
-      .collection('users').doc('qSPMM3xhfdp3Friamfv7')
+      .collection('users').doc(uid)
       .collection('info');
   CollectionReference<Map<String, dynamic>> get stream =>_stream;
 
@@ -308,7 +309,7 @@ class ImageFuncEdit extends ChangeNotifier{
         TaskSnapshot snapshot = await storage
             .ref()
             .child('users')
-            .child('user[qSPMM3xhfdp3Friamfv7]')
+            .child('user[$uid]')
             .child(name)
             .putFile(_image);
         final String downloadUrl = await snapshot.ref.getDownloadURL();
