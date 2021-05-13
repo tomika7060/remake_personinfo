@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:widgetsampule/inputPage/inputPageWidget.dart';
 
@@ -248,18 +249,58 @@ class EmailSignIn extends StatelessWidget{
             key: _form,
             child: (eOrP=='email') ? TextFormField(
               controller: watch(_loginProvider).emailController,
-              decoration: InputDecoration(labelText: 'email'),
+              decoration: InputDecoration(
+                filled: true,
+                  fillColor: Colors.white12,
+                  labelText: 'email',
+                  labelStyle: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white70
+                  ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Colors.grey
+                )
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Colors.grey
+                )
+              ),
+              ),
               textInputAction: TextInputAction.next,
               onFieldSubmitted: (_) {
                 FocusScope.of(context).requestFocus(_passwordFocusNode);
               },
             ):(eOrP=='pass') ? TextFormField(
               controller: watch(_loginProvider).passwordController,
-              decoration: InputDecoration(labelText: 'パスワードを入力してください'),
+              decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white12,
+                  labelText: 'パスワードを入力してください',
+                  labelStyle: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white70
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          color: Colors.grey
+                      )
+                  ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Colors.grey
+                )
+              )
+              ),
               obscureText: true,
               focusNode: _passwordFocusNode,
             ): ElevatedButton(
-                child: Text('作成'),
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.white38,
+                  onPrimary: Colors.lightBlueAccent,
+                  elevation: 10,
+                ),
                 onPressed: () async {
                   try {
                    await watch(_loginProvider).login();
@@ -268,10 +309,58 @@ class EmailSignIn extends StatelessWidget{
                   catch (e) {
                     watch(_imageProvider).alertFunc(context, e);
                   }
-                }
+                },
+                child: Text('ログイン',
+                style: TextStyle(
+                  color: Colors.white
+                ),),
             ),
           );
         }
     );
   }
+}
+
+class FacebookLoginState extends ChangeNotifier{
+  static final facebookLogin = FacebookLogin();
+  final _form = GlobalKey<FormState>();
+  String _email;
+  String _password;
+  bool _isLogin = false;
+
+  void facebookLogIn() async {
+    final result = await facebookLogin.logIn(['email']);
+
+    switch (result.status) {
+      case FacebookLoginStatus.loggedIn:
+        final credential = FacebookAuthProvider.credential(
+            result.accessToken.token
+        );
+        final authResult =
+        await FirebaseAuth.instance.signInWithCredential(credential);
+        print(authResult.user.uid);
+        break;
+      case FacebookLoginStatus.error:
+        print('error, ${result.errorMessage}');
+        break;
+      case FacebookLoginStatus.cancelledByUser:
+        print('cancelled');
+        break;
+    }
+  }
+  Future<void> trySubmit() async {
+    if (!_form.currentState.validate()) {
+      return;
+    }
+    _form.currentState.save();
+    final auth = FirebaseAuth.instance;
+    if (_isLogin) {
+      final result = await auth.signInWithEmailAndPassword(email: _email, password: _password);
+      print(result.user.uid);
+    } else {
+      final result = await auth.createUserWithEmailAndPassword(email: _email, password: _password);
+      print(result.user.uid);
+    }
+  }
+
 }

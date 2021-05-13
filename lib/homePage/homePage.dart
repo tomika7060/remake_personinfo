@@ -14,10 +14,12 @@ class HomePage extends StatelessWidget{
         title: Text('ホーム'),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.signal_cellular_no_sim_outlined),
-              onPressed: (){
-            FirebaseAuth.instance.signOut();
-               },
+            icon: Icon(Icons.logout,
+              size: 25,
+            ),
+            onPressed: (){
+              FirebaseAuth.instance.signOut();
+            },
           )
         ],
       ),
