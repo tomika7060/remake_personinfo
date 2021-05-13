@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:widgetsampule/homePage/home.dart';
 
 
 final _listFirebaseProvider=ChangeNotifierProvider.autoDispose(
@@ -23,7 +23,8 @@ final _textControlProvider =ChangeNotifierProvider.autoDispose(
 
 
 String imageUrl;
-final String uid=FirebaseAuth.instance.currentUser.uid;
+
+
 
 class TextForm extends StatelessWidget{
   String category;

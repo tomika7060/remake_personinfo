@@ -6,6 +6,7 @@ import 'package:widgetsampule/inputPage/inputPage.dart';
 
 
 
+
 class HomePage extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
@@ -17,8 +18,8 @@ class HomePage extends StatelessWidget{
             icon: Icon(Icons.logout,
               size: 25,
             ),
-            onPressed: (){
-              FirebaseAuth.instance.signOut();
+            onPressed: ()async{
+             await FirebaseAuth.instance.signOut();
             },
           )
         ],

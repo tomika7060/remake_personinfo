@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:widgetsampule/homePage/home.dart';
 import 'package:widgetsampule/inputPage/inputPageWidget.dart';
 
 final _loginProvider=ChangeNotifierProvider.autoDispose(
@@ -138,7 +139,9 @@ class LoginWidget extends ChangeNotifier{
       password: passwordController.text,
     );
 
-    if (result == FirebaseAuthResultStatus.Successful) {
+    if (result == FirebaseAuthResultStatus.Successful){
+       uid=  FirebaseAuth.instance.currentUser.uid;
+
     // ログイン成功時の処理
     } else {
     // ログイン失敗時の処理
@@ -299,12 +302,11 @@ class EmailSignIn extends StatelessWidget{
                 style: ElevatedButton.styleFrom(
                   primary: Colors.white38,
                   onPrimary: Colors.lightBlueAccent,
-                  elevation: 10,
+                  elevation: 12,
                 ),
                 onPressed: () async {
                   try {
                    await watch(_loginProvider).login();
-                        Navigator.pop(context);
                   }
                   catch (e) {
                     watch(_imageProvider).alertFunc(context, e);
@@ -339,6 +341,7 @@ class FacebookLoginState extends ChangeNotifier{
         final authResult =
         await FirebaseAuth.instance.signInWithCredential(credential);
         print(authResult.user.uid);
+        uid=authResult.user.uid;
         break;
       case FacebookLoginStatus.error:
         print('error, ${result.errorMessage}');

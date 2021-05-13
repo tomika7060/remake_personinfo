@@ -6,9 +6,10 @@ import 'package:widgetsampule/inputPage/inputPageWidget.dart';
 import 'package:widgetsampule/personalPage/personalPage.dart';
 
 
-final _listFirebaseProvider=ChangeNotifierProvider(
+final _listFirebaseProvider=ChangeNotifierProvider.autoDispose(
       (ref) => ListChangeFirebase(),
 );
+
 
 class ListFireStore extends StatelessWidget{
   @override

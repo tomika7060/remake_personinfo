@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,7 +6,9 @@ import 'package:widgetsampule/calender/calender.dart';
 import 'package:widgetsampule/homePage/homePage.dart';
 
 
-final pageTypeProvider =StateProvider<PageType>((ref) => PageType.homePage);
+final pageTypeProvider =StateProvider.autoDispose<PageType>((ref) => PageType.homePage);
+
+String uid=FirebaseAuth.instance.currentUser.uid;
 
 enum PageType {
   homePage,
