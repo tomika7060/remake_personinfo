@@ -13,7 +13,7 @@ class PersonalPage extends StatelessWidget{
       body: SingleChildScrollView(
         child: Column(
           children: [
-            ImageFormEdit(document['imageUrl']),
+            ImageFormEdit(document['imageUrl'],document['uuid']),
             SizedBox(
               height: 20,
             ),
@@ -45,6 +45,20 @@ class PersonalPage extends StatelessWidget{
                   TextFormMultilineEdit(document,'メモ1'),
                   TextFormMultilineEdit(document,'メモ2'),
                   TextFormMultilineEdit(document,'メモ3'),
+                ],
+              ),
+            ),
+            Text('予定'),
+            Card(
+              child: CalenderListEdit(document['uuid']),
+            ),
+            Card(
+              child: Column(
+                children: [
+                  DatePickerEdit(),
+                  Text('予定や過去の出来事を入力してください'),
+                  CalenderTextBoxEdit(),
+                  CalenderAddButtonEdit(document['uuid']),
                 ],
               ),
             ),

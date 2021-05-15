@@ -6,21 +6,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:widgetsampule/homePage/home.dart';
-
-
+import 'package:widgetsampule/inputPage/inputPageWidget.dart';
 
 final _listFirebaseProvider=ChangeNotifierProvider.autoDispose(
+      (ref) => ListChangeFirebase(),
+);
+
+final _listFirebaseEditProvider=ChangeNotifierProvider(
       (ref) => ListChangeFirebaseEdit(),
 );
 
-final _textControlProvider =ChangeNotifierProvider.autoDispose(
+final _textControlEditProvider =ChangeNotifierProvider.autoDispose(
       (ref) => TextControlEdit(),
 );
 
 final _imageProvider=ChangeNotifierProvider.autoDispose(
       (ref) => ImageFuncEdit(),
 );
+
+final _datePickProvider=ChangeNotifierProvider.autoDispose(
+      (ref) => DatePickEdit(),
+);
+
 
 String imageUrlEdit;
 
@@ -32,7 +41,7 @@ class TextFormEdit extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     //ここでテキストコントローラーに初期値を渡している
-    context.read(_textControlProvider).getFirebaseKey()[category].text=document[category];
+    context.read(_textControlEditProvider).getFirebaseKey()[category].text=document[category];
     return Consumer(
         builder: (context,watch,child) {
           return Column(
@@ -47,7 +56,7 @@ class TextFormEdit extends StatelessWidget{
                         ),))),
                     Flexible(
                       child: TextField(
-                        controller: watch(_textControlProvider)
+                        controller: watch(_textControlEditProvider)
                             .getFirebaseKey()[category],
                         decoration: InputDecoration(
                           border: OutlineInputBorder(),
@@ -68,7 +77,7 @@ class TextFormMultilineEdit extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
-    context.read(_textControlProvider).getFirebaseKey()[category].text=document[category];
+    context.read(_textControlEditProvider).getFirebaseKey()[category].text=document[category];
     return Consumer(
         builder: (context,watch,child) {
           return Column(
@@ -84,7 +93,7 @@ class TextFormMultilineEdit extends StatelessWidget{
                             ),))),
                     Flexible(
                       child: TextField(
-                        controller: watch(_textControlProvider)
+                        controller: watch(_textControlEditProvider)
                             .getFirebaseKey()[category],
                         keyboardType: TextInputType.multiline,
                         maxLines: null,
@@ -104,8 +113,20 @@ class TextFormMultilineEdit extends StatelessWidget{
 class ListChangeFirebaseEdit extends ChangeNotifier{
   CollectionReference<Map<String, dynamic>> _stream = FirebaseFirestore.instance
       .collection('users').doc(uid)
-      .collection('info');
+      .collection('friends');
   CollectionReference<Map<String, dynamic>> get stream =>_stream;
+
+
+  void calenderAddEdit(date,content,uuid){
+    if(content==''){
+      throw('内容が書かれていません');
+    }
+    stream.doc(uuid).collection('Calender').add({
+      'CreateAt':DateTime.now(),
+      '日付':date,
+      '内容':content,
+    });
+  }
 
   void nameCheck(String text){
     if(text.isEmpty){
@@ -124,7 +145,6 @@ class ListChangeFirebaseEdit extends ChangeNotifier{
       'メモ2':map['メモ2'].text,
       'メモ3':map['メモ3'].text,
       'imageUrl':imageUrlEdit,
-      'CreatedAt':Timestamp.now(),
     });
   }
 }
@@ -139,8 +159,8 @@ class AddButtonEdit extends StatelessWidget{
           return ElevatedButton(
               onPressed:()async{
                 try{
-                  context.read(_listFirebaseProvider).nameCheck(context.read(_textControlProvider).nameController.text);
-                  context.read(_listFirebaseProvider).listUpdate(id,context.read(_textControlProvider).getFirebaseKey());
+                  context.read(_listFirebaseEditProvider).nameCheck(context.read(_textControlEditProvider).nameController.text);
+                  context.read(_listFirebaseEditProvider).listUpdate(id,context.read(_textControlEditProvider).getFirebaseKey());
 
                   Navigator.pop(context);
                 }
@@ -178,6 +198,7 @@ class TextControlEdit extends ChangeNotifier {
   final TextEditingController memo1Controller = TextEditingController();
   final TextEditingController memo2Controller = TextEditingController();
   final TextEditingController memo3Controller = TextEditingController();
+  final TextEditingController calenderContentController = TextEditingController();
 
   Map<String ,TextEditingController> getFirebaseKey() =>
       {
@@ -189,16 +210,23 @@ class TextControlEdit extends ChangeNotifier {
         'メモ1':memo1Controller,
         'メモ2':memo2Controller,
         'メモ3':memo3Controller,
-
+        '内容':calenderContentController,
       };
 
+  void contentDispose(){
+    calenderContentController.text='';
+    notifyListeners();
+  }
 }
+
+
 
 //↓画像関係
 
 class ImageFormEdit extends StatelessWidget{
   String imageUrl;
-  ImageFormEdit(this.imageUrl);
+  String uid;
+  ImageFormEdit(this.imageUrl,this.uid);
   @override
   Widget build(BuildContext context) {
     imageUrlEdit=imageUrl;
@@ -210,11 +238,8 @@ class ImageFormEdit extends StatelessWidget{
         iconSize: 120.0,
         onPressed: () async{
           try {
-            watch(_listFirebaseProvider).nameCheck(context.read(_textControlProvider).nameController.text);
-            watch(_imageProvider).showBottomSheet(context, context
-                .read(_textControlProvider)
-                .nameController
-                .text);
+            watch(_listFirebaseEditProvider).nameCheck(context.read(_textControlEditProvider).nameController.text);
+            watch(_imageProvider).showBottomSheet(context,uid);
           }catch(e){
             watch(_imageProvider).alertFunc(context, e);
           }
@@ -229,11 +254,8 @@ class ImageFormEdit extends StatelessWidget{
                       child: GestureDetector(
                         onTap: (){
                          try {
-                         watch(_listFirebaseProvider).nameCheck(context.read(_textControlProvider).nameController.text);
-                         watch(_imageProvider).showBottomSheet(context, context
-                          .read(_textControlProvider)
-                          .nameController
-                          .text);
+                         watch(_listFirebaseEditProvider).nameCheck(context.read(_textControlEditProvider).nameController.text);
+                         watch(_imageProvider).showBottomSheet(context,context.read(_listFirebaseEditProvider).stream);
                         }catch(e){
                              watch(_imageProvider).alertFunc(context,e);
                              }
@@ -248,15 +270,7 @@ class ImageFormEdit extends StatelessWidget{
           ):ClipOval(
             child: GestureDetector(
                    onTap: (){
-                     try {
-                       watch(_listFirebaseProvider).nameCheck(context.read(_textControlProvider).nameController.text);
-                       watch(_imageProvider).showBottomSheet(context, context
-                           .read(_textControlProvider)
-                           .nameController
-                           .text);
-                     }catch(e){
-                       watch(_imageProvider).alertFunc(context,e);
-                     }
+                       watch(_imageProvider).showBottomSheet(context,uid);
                    },
                    child: Image.network(
                      imageUrlEdit,
@@ -300,26 +314,25 @@ class ImageFuncEdit extends ChangeNotifier{
     );
   }
 
-  Future<String> _uploadImage(_image,name) async {
+  Future<String> _uploadImage(_image,uuid) async {
     if ( _image == null) {
       return '';
     }
     else {
-      if(name!='') {
         final storage = FirebaseStorage.instance;
         TaskSnapshot snapshot = await storage
             .ref()
             .child('users')
             .child('user[$uid]')
-            .child(name)
+            .child(uuid)
+            .child('icon')
             .putFile(_image);
         final String downloadUrl = await snapshot.ref.getDownloadURL();
         return downloadUrl;
-      }else{
-        throw('名前を入力してください');
       }
-    }
-  }
+      }
+
+
 
 
   Future<int> showCupertinoBottomBar(context) {
@@ -359,7 +372,7 @@ class ImageFuncEdit extends ChangeNotifier{
     );
   }
 
-  void showBottomSheet(context,name) async {
+  void showBottomSheet(context,uuid) async {
     //ボトムシートから受け取った値によって操作を変える
     final result = await showCupertinoBottomBar(context);
     File imageFile;
@@ -369,7 +382,7 @@ class ImageFuncEdit extends ChangeNotifier{
       imageFile = await ImageUploadEdit(ImageSource.gallery).getImageFromDevice();
     }
     _image = imageFile;
-    imageUrlEdit= await _uploadImage(_image,name);
+    imageUrlEdit= await _uploadImage(_image,uuid);
     notifyListeners();
   }
 }
@@ -395,3 +408,195 @@ class ImageUploadEdit {
 
 //↑画像関係
 
+class CalenderListEdit extends StatelessWidget{
+  String uuid;
+  CalenderListEdit(this.uuid);
+  @override
+  Widget build(BuildContext context) {
+    return Consumer(
+        builder: (context,watch,child){
+          return StreamBuilder<QuerySnapshot>(
+              stream: watch(_listFirebaseEditProvider).stream.doc(uuid).collection('Calender').snapshots(),
+              builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
+                if(snapshot.hasError) return Text('Error: ${snapshot.error}');
+                switch (snapshot.connectionState){
+                  case ConnectionState.waiting:
+                    return Text('Loading...');
+                  default:
+                    return ListView(
+                        shrinkWrap: true,
+                        children: snapshot.data.docs.map((DocumentSnapshot document){
+                          return Card(
+                            child: ListTile(
+                              leading: Text(document['日付']),
+                              title: Text(document['内容']),
+                            ),
+                          );
+                        }
+                        ).toList()
+                    );
+                }
+              }
+          );
+        }
+    );
+  }
+}
+class CalenderAddButtonEdit extends StatelessWidget{
+  String uid;
+  CalenderAddButtonEdit(this.uid);
+  @override
+  Widget build(BuildContext context) {
+    return Consumer(
+        builder: (context,watch,child){
+          return ElevatedButton(
+              onPressed:(){
+                try{
+                  context.read(_listFirebaseEditProvider).calenderAddEdit(
+                    DateFormat('yyyy/ MM/dd').format(context.read(_datePickProvider).dateValue),
+                    context.read(_textControlEditProvider).calenderContentController.text,
+                    uid
+                  );
+                  context.read(_textControlEditProvider).contentDispose();
+                }
+                catch(e){
+                  context.read(_listFirebaseProvider).alertFunc(context, e);
+                }
+              },
+              child: Text('追加'));}
+    );
+  }
+}
+
+class CalenderTextBoxEdit extends StatelessWidget{
+  @override
+  Widget build(BuildContext context) {
+    return Consumer(
+        builder: (context,watch,child) {
+          return Row(
+            children: [
+              ConstrainedBox(
+                constraints: BoxConstraints.tight(Size(20,70)),
+              ),
+              Flexible(
+                child: TextField(
+                  controller: watch(_textControlEditProvider)
+                      .getFirebaseKey()['内容'],
+                  decoration: InputDecoration(
+                    labelText: '内容',
+                  ),
+                ),
+              ),
+            ],
+          );
+        });
+  }
+}
+
+class DatePickerEdit extends StatelessWidget{
+  @override
+  Widget build(BuildContext context) {
+    return Consumer(
+        builder: (context,watch,child) {
+          return  Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Text(DateFormat('yyyy/ MM/dd').format(watch(_datePickProvider).dateValue),
+                style: TextStyle(
+                  color: CupertinoColors.black,
+                  fontSize: 22.0,
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  //datePicker表示
+                  watch(_datePickProvider).showCupercinoDatePicker(context);
+                },
+                child: Text('日付選択'),
+              ),
+            ],
+          );
+        } );
+  }
+}
+
+class DatePickEdit extends ChangeNotifier{
+  DateTime dateValue=DateTime.now();
+  void showCupercinoDatePicker(context){
+    showCupertinoModalPopup(
+        context: context,
+        builder: (BuildContext context){
+          return Column(
+              mainAxisAlignment:
+              MainAxisAlignment.end,
+              children: <Widget>[
+                Column(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Colors.white,
+                            width: 0.0,
+                          ),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment:
+                            MainAxisAlignment
+                                .spaceBetween,
+                            children: <Widget>[
+                              /// クパチーノデザインのボタン表示
+                              CupertinoButton(
+                                child: Text('キャンセル'),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                padding: const EdgeInsets
+                                    .symmetric(
+                                  horizontal: 16.0,
+                                  vertical: 5.0,
+                                ),
+                              ),
+                              CupertinoButton(
+                                child: Text('追加'),
+                                onPressed: () {
+                                  print(dateValue);
+                                  notifyListeners();
+                                  Navigator.pop(context);
+                                },
+                                padding: const EdgeInsets
+                                    .symmetric(
+                                  horizontal: 16.0,
+                                  vertical: 5.0,
+                                ),
+                              )
+                            ],
+                          ),
+                          Container(
+                            height: MediaQuery.of(context).size.height / 3,
+                            child: CupertinoDatePicker(
+                              /// datePickerを日付のみの表示にする
+                              initialDateTime: DateTime.now(),
+                              onDateTimeChanged:
+                                  (DateTime newDateTime) {
+                                //日付が変わった時の処理
+                                dateValue=newDateTime;
+                              },
+                              mode: CupertinoDatePickerMode.date,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ]
+          );
+        }
+    );
+  }
+}

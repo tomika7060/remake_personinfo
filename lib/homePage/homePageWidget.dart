@@ -10,7 +10,6 @@ final _listFirebaseProvider=ChangeNotifierProvider.autoDispose(
       (ref) => ListChangeFirebase(),
 );
 
-
 class ListFireStore extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
@@ -89,9 +88,12 @@ class ListFireStore extends StatelessWidget{
             actions: <Widget>[
               TextButton(
                   onPressed: (){
-                    context.read(_listFirebaseProvider).listDelete(document);
-                    context.read(_listFirebaseProvider).storageDelete(document['名前']);
-                    Navigator.pop(context);
+                   context.read(_listFirebaseProvider).listDelete(document);
+                   if(document['imageUrl']!='') {
+                     context.read(_listFirebaseProvider).storageDelete(
+                         document['uuid']);
+                   }
+                   Navigator.pop(context);
                   },
                   child: Text('はい')
               ),

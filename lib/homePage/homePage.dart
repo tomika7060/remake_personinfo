@@ -4,9 +4,6 @@ import 'package:widgetsampule/homePage/homePageWidget.dart';
 import 'package:widgetsampule/inputPage/inputPage.dart';
 
 
-
-
-
 class HomePage extends StatelessWidget{
   @override
   Widget build(BuildContext context) {

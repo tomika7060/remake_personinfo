@@ -9,8 +9,9 @@ import 'package:widgetsampule/inputPage/inputPageWidget.dart';
 final _loginProvider=ChangeNotifierProvider.autoDispose(
         (ref)=> LoginWidget()
 );
-final _imageProvider=ChangeNotifierProvider.autoDispose(
-      (ref) => ImageFunc(),
+
+final _listFirebaseProvider=ChangeNotifierProvider.autoDispose(
+      (ref) => ListChangeFirebase(),
 );
 
 enum FirebaseAuthResultStatus {
@@ -229,7 +230,7 @@ class EmailSignUp extends StatelessWidget{
                     Navigator.pop(context);
                   }
                 catch (e) {
-                    watch(_imageProvider).alertFunc(context, e);
+                    watch(_listFirebaseProvider).alertFunc(context, e);
                 }
                 }
             ),
@@ -309,7 +310,7 @@ class EmailSignIn extends StatelessWidget{
                    await watch(_loginProvider).login();
                   }
                   catch (e) {
-                    watch(_imageProvider).alertFunc(context, e);
+                    watch(_listFirebaseProvider).alertFunc(context, e);
                   }
                 },
                 child: Text('ログイン',

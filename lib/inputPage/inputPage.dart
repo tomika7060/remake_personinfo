@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:widgetsampule/inputPage/inputPageWidget.dart';
 
-
 class InputPage extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
@@ -45,6 +44,20 @@ class InputPage extends StatelessWidget{
                   TextFormMultiline('メモ1'),
                   TextFormMultiline('メモ2'),
                   TextFormMultiline('メモ3'),
+                ],
+              ),
+            ),
+            Text('予定'),
+            Card(
+              child: CalenderList(),
+            ),
+            Card(
+              child: Column(
+                children: [
+                  DatePicker(),
+                  Text('予定や過去の出来事を入力してください'),
+                  CalenderTextBox(),
+                  CalenderAddButton(),
                 ],
               ),
             ),
