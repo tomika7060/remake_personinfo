@@ -8,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:widgetsampule/homePage/home.dart';
-import 'package:widgetsampule/inputPage/inputPageWidget.dart';
+import 'package:widgetsampule/inputPage/inputPageModel.dart';
 
 final _listFirebaseProvider=ChangeNotifierProvider.autoDispose(
       (ref) => ListChangeFirebase(),
@@ -117,7 +117,7 @@ class ListChangeFirebaseEdit extends ChangeNotifier{
   CollectionReference<Map<String, dynamic>> get stream =>_stream;
 
 
-  void calenderAddEdit(date,content,uuid){
+  void calenderAddEdit(DateTime date,String content,String uuid){
     if(content==''){
       throw('内容が書かれていません');
     }
@@ -183,7 +183,7 @@ class AddButtonEdit extends StatelessWidget{
                   );
                 }
               },
-              child: Text('追加'));}
+              child: Text('保存して戻る'));}
     );
   }
 }
@@ -428,7 +428,7 @@ class CalenderListEdit extends StatelessWidget{
                         children: snapshot.data.docs.map((DocumentSnapshot document){
                           return Card(
                             child: ListTile(
-                              leading: Text(document['日付']),
+                              leading: Text(DateFormat('yyyy/MM/dd').format(document['日付'].toDate())),
                               title: Text(document['内容']),
                             ),
                           );
@@ -453,7 +453,7 @@ class CalenderAddButtonEdit extends StatelessWidget{
               onPressed:(){
                 try{
                   context.read(_listFirebaseEditProvider).calenderAddEdit(
-                    DateFormat('yyyy/ MM/dd').format(context.read(_datePickProvider).dateValue),
+                    context.read(_datePickProvider).dateValue,
                     context.read(_textControlEditProvider).calenderContentController.text,
                     uid
                   );

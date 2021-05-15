@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:widgetsampule/logIn/loginWidget.dart';
+import 'package:widgetsampule/logIn/loginModel.dart';
 
 
 class AccountCreate extends StatelessWidget {

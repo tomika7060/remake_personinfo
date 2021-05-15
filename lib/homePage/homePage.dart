@@ -1,8 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:widgetsampule/homePage/homePageWidget.dart';
+import 'package:widgetsampule/homePage/homePageModel.dart';
 import 'package:widgetsampule/inputPage/inputPage.dart';
-
 
 class HomePage extends StatelessWidget{
   @override

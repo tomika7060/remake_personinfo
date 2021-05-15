@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:widgetsampule/inputPage/inputPageWidget.dart';
+import 'package:widgetsampule/inputPage/inputPageModel.dart';
 import 'package:widgetsampule/personalPage/personalPage.dart';
 
 
@@ -50,8 +50,8 @@ class ListFireStore extends StatelessWidget{
                                 size: 45,):ClipOval(
                                   child: Image.network(document['imageUrl'],
                                     fit: BoxFit.fill,
-                                    height: 50,
-                                    width: 50,
+                                    height: 45,
+                                    width: 45,
                                   )
                               ),
                               title: Text(document['名前'],

@@ -522,7 +522,7 @@ class CalenderList extends StatelessWidget{
                        children: snapshot.data.docs.map((DocumentSnapshot document){
                          return Card(
                            child: ListTile(
-                             leading: Text(document['日付']),
+                             leading: Text(DateFormat('yyyy/MM/dd').format(document['日付'].toDate())),
                              title: Text(document['内容']),
                            ),
                          );
@@ -571,8 +571,7 @@ class CalenderAddButton extends StatelessWidget{
               onPressed:(){
                 try{
                   context.read(_listFirebaseProvider).contentsCheck(context.read(_textControlProvider).calenderContentController.text);
-                  context.read(_listFirebaseProvider).calenderAdd(
-                    DateFormat('yyyy/ MM/dd').format(context.read(_datePickProvider).dateValue),
+                  context.read(_listFirebaseProvider).calenderAdd(context.read(_datePickProvider).dateValue,
                   context.read(_textControlProvider).calenderContentController.text,);
                   context.read(_textControlProvider).contentDispose();
                 }

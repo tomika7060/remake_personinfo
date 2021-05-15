@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:widgetsampule/homePage/home.dart';
-import 'package:widgetsampule/inputPage/inputPageWidget.dart';
+import 'package:widgetsampule/inputPage/inputPageModel.dart';
 
 final _loginProvider=ChangeNotifierProvider.autoDispose(
         (ref)=> LoginWidget()

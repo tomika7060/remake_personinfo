@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:widgetsampule/personalPage/personalPageWidget.dart';
+import 'package:widgetsampule/personalPage/personalPageModel.dart';
 
 class PersonalPage extends StatelessWidget{
   final document;
@@ -58,9 +58,14 @@ class PersonalPage extends StatelessWidget{
                   DatePickerEdit(),
                   Text('予定や過去の出来事を入力してください'),
                   CalenderTextBoxEdit(),
+                  SizedBox(height: 5,),
                   CalenderAddButtonEdit(document['uuid']),
+                  SizedBox(height: 5,),
                 ],
               ),
+            ),
+            SizedBox(
+              height: 20,
             ),
             AddButtonEdit(document.id),
           ],

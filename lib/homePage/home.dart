@@ -7,7 +7,6 @@ import 'package:widgetsampule/homePage/homePage.dart';
 
 
 final pageTypeProvider =StateProvider.autoDispose<PageType>((ref) => PageType.homePage);
-
 String uid=FirebaseAuth.instance.currentUser.uid;
 
 enum PageType {
