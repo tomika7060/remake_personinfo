@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:widgetsampule/homePage/home.dart';
+import 'package:widgetsampule/personalPage/personalPage.dart';
 
 
 class CalendarScreen extends StatefulWidget {
@@ -39,7 +40,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
           calenderContent['内容'],
           userInfo
         ]);
-
         date.add(DateTime.parse(DateFormat('yyyy-MM-dd').format(calenderContent['日付'].toDate())));
       }
     }
@@ -50,7 +50,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
           convert.add(conversion[index]);
         }
       }
-      print(DateTime.parse(DateFormat('yyyy-MM-dd').format(date[indexs])));
       if(_eventsList.containsKey(date[indexs])==false){
       _eventsList.addAll({
        DateTime.parse(DateFormat('yyyy-MM-dd').format(date[indexs])):convert,
@@ -75,8 +74,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
     _future=getCalenderContents();
   }
 
-
-
     @override
     Widget build(BuildContext context) {
       return Scaffold(
@@ -97,7 +94,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
               }
               switch (snapshot.connectionState){
                 case ConnectionState.waiting:
-                  return CircularProgressIndicator();
+                  return Center(
+                      child: CircularProgressIndicator()
+                  );
                 default:
               return Column(
                 children: [
@@ -140,10 +139,29 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         .map((event) =>
                         Card(
                           child: ListTile(
-                            title: Text(event[0]+': 内容 :'+event[2]),
+                            leading: (event[1]=='' || event[1]==null) ? Icon(Icons.account_circle,size: 45,):
+                            ClipOval(
+                              child: Image.network(
+                                event[1],
+                                fit: BoxFit.fill,
+                                height: 40,
+                                width: 40,
+                              ),
+                            ),
+                            title: Text(event[2]),
+                            subtitle: Text('名前 : '+event[0]),
+                            trailing: IconButton(
+                              icon: Icon(Icons.arrow_forward_ios,
+                                size: 35,),
+                              onPressed: ()async{
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => PersonalPage(event[3]))
+                                );
+                              },
+                            ),
                           ),
-                        ))
-                        .toList(),
+                        )).toList(),
                   )
                 ],
               );}

@@ -14,7 +14,6 @@ final _listFirebaseProvider=ChangeNotifierProvider.autoDispose(
       (ref) => ListChangeFirebase(),
 );
 
-
 final _textControlProvider =ChangeNotifierProvider.autoDispose(
     (ref) => TextControl(),
 );
@@ -22,6 +21,19 @@ final _textControlProvider =ChangeNotifierProvider.autoDispose(
 final _datePickProvider=ChangeNotifierProvider.autoDispose(
       (ref) => DatePick(),
 );
+
+final tabTypeProvider =StateProvider.autoDispose<TabWidgetType>((ref) => TabWidgetType.ImageForm);
+
+enum TabWidgetType{
+  ImageForm,
+  ImageFormBusiness,
+}
+
+class TabInfo {
+  String label;
+  Widget widget;
+  TabInfo(this.label, this.widget);
+}
 
 class TextForm extends StatelessWidget{
   String category;
@@ -203,7 +215,6 @@ class ListChangeFirebase extends ChangeNotifier{
     }
   }
 
-
   Future<int> showCupertinoBottomBar(context) {
     //選択するためのボトムシートを表示
     return showCupertinoModalPopup<int>(
@@ -325,7 +336,89 @@ class TextControl extends ChangeNotifier {
 }
 //↓画像関係
 
+class ImageTab extends StatelessWidget{
+
+  final List<Tab> tabs = <Tab>[
+    Tab(
+      text: 'アイコン',
+    ),
+    Tab(
+      text: "名刺",
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer(
+        builder: (context,watch,child){
+          return Column(
+            children: [
+              TabBar(
+                tabs: tabs,
+                unselectedLabelColor: Colors.grey,
+                indicatorColor: Colors.blue,
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicatorWeight: 2,
+                indicatorPadding: EdgeInsets.symmetric(horizontal: 18.0,
+                    vertical: 8),
+                labelColor: Colors.black,
+              ),
+            ],
+          );
+        });
+  }
+}
+
 class ImageForm extends StatelessWidget{
+  @override
+  Widget build(BuildContext context) {
+    return Consumer(builder: (context,watch,child){
+      return (watch(_listFirebaseProvider)._image == null) ?
+      IconButton(
+      icon: Icon(Icons.account_circle),
+      color: Colors.grey,
+      iconSize: 120.0,
+      onPressed: () async{
+          watch(_listFirebaseProvider).showBottomSheet(context, context
+              .read(_textControlProvider)
+              .nameController
+              .text);
+        },
+      )
+        : Column(
+         children: [
+        SizedBox(
+          height: 20,
+        ),
+        ClipOval(
+          child: GestureDetector(
+            onTap: (){
+              try {
+                watch(_listFirebaseProvider).nameCheck(context.read(_textControlProvider).nameController.text);
+                watch(_listFirebaseProvider).showBottomSheet(context, context
+                    .read(_textControlProvider)
+                    .nameController
+                    .text);
+              }catch(e){
+                watch(_listFirebaseProvider).alertFunc(context,e);
+              }
+              },
+            child: Image.memory(
+              watch(_listFirebaseProvider)._image.readAsBytesSync(),
+              width: 100,
+              height: 100,
+              fit: BoxFit.fill,
+            ),
+          ),
+        ),
+      ],
+      );
+    }
+    );
+  }
+}
+
+class ImageFormBusiness extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context,watch,child){
@@ -335,14 +428,14 @@ class ImageForm extends StatelessWidget{
         color: Colors.grey,
         iconSize: 120.0,
         onPressed: () async{
-            watch(_listFirebaseProvider).showBottomSheet(context, context
-                .read(_textControlProvider)
-                .nameController
-                .text);
-          },
+          watch(_listFirebaseProvider).showBottomSheet(context, context
+              .read(_textControlProvider)
+              .nameController
+              .text);
+        },
       )
           : Column(
-           children: [
+        children: [
           SizedBox(
             height: 20,
           ),
@@ -358,7 +451,7 @@ class ImageForm extends StatelessWidget{
                 }catch(e){
                   watch(_listFirebaseProvider).alertFunc(context,e);
                 }
-                },
+              },
               child: Image.memory(
                 watch(_listFirebaseProvider)._image.readAsBytesSync(),
                 width: 100,
