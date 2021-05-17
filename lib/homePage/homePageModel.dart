@@ -45,28 +45,30 @@ class ListFireStore extends StatelessWidget{
                                 },
                               )
                             ],
-                            child: ListTile(
-                              leading: (document['imageUrl'] == '' || document['imageUrl']==null ) ? Icon(Icons.account_circle,
-                                size: 45,):ClipOval(
-                                  child: Image.network(document['imageUrl'],
-                                    fit: BoxFit.fill,
-                                    height: 45,
-                                    width: 45,
-                                  )
-                              ),
-                              title: Text(document['名前'],
-                                style: TextStyle(
-                                    fontSize: 22
-                                ),),
-                              trailing: IconButton(
-                                icon: Icon(Icons.arrow_forward_ios,
-                                  size: 35,),
-                                onPressed: (){
-                                  Navigator.push(
-                                    context, 
-                                    MaterialPageRoute(builder: (context) => PersonalPage(document))
-                                  );
-                                },
+                            child: Card(
+                              child: ListTile(
+                                leading: (document['imageUrl'] == '' || document['imageUrl']==null ) ? Icon(Icons.account_circle,
+                                  size: 45,):ClipOval(
+                                    child: Image.network(document['imageUrl'],
+                                      fit: BoxFit.fill,
+                                      height: 45,
+                                      width: 45,
+                                    )
+                                ),
+                                title: Text(document['名前'],
+                                  style: TextStyle(
+                                      fontSize: 22
+                                  ),),
+                                trailing: IconButton(
+                                  icon: Icon(Icons.arrow_forward_ios,
+                                    size: 35,),
+                                  onPressed: (){
+                                    Navigator.push(
+                                      context, 
+                                      MaterialPageRoute(builder: (context) => PersonalPage(document))
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                             actionPane: SlidableScrollActionPane(),
