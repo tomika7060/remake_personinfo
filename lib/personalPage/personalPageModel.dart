@@ -22,16 +22,12 @@ final _textControlEditProvider =ChangeNotifierProvider.autoDispose(
       (ref) => TextControlEdit(),
 );
 
-final _imageProvider=ChangeNotifierProvider.autoDispose(
-      (ref) => ImageFuncEdit(),
-);
+
 
 final _datePickProvider=ChangeNotifierProvider.autoDispose(
       (ref) => DatePickEdit(),
 );
 
-
-String imageUrlEdit;
 
 
 class TextFormEdit extends StatelessWidget{
@@ -111,10 +107,131 @@ class TextFormMultilineEdit extends StatelessWidget{
 
 
 class ListChangeFirebaseEdit extends ChangeNotifier{
+  String imageUrlEdit;
+  String imageUrlEditBusinessCard;
   CollectionReference<Map<String, dynamic>> _stream = FirebaseFirestore.instance
       .collection('users').doc(uid)
       .collection('friends');
   CollectionReference<Map<String, dynamic>> get stream =>_stream;
+
+  File _image;
+  File _imageBusinessCard;
+  String imageName;
+  final picker = ImagePicker();
+
+  dynamic alertFunc(context,e){
+    showDialog(
+        context: context,
+        builder: (BuildContext context){
+          return AlertDialog(
+            title: Text(e.toString()),
+            actions: <Widget>[
+              TextButton(
+                  onPressed: (){
+                    Navigator.pop(context);
+                  },
+                  child: Text('OK')
+              ),
+            ],
+          );
+        }
+    );
+  }
+
+  Future<String> _uploadImage(File _image,String uuid,int index) async {
+    if(index==0){
+      if ( _image == null) {
+        return '';
+      }
+      else {
+        final storage = FirebaseStorage.instance;
+        TaskSnapshot snapshot = await storage
+            .ref()
+            .child('users')
+            .child('user[$uid]')
+            .child(uuid)
+            .child('icon')
+            .putFile(_image);
+        final String downloadUrl = await snapshot.ref.getDownloadURL();
+        return downloadUrl;
+      }}else if(index==1){
+      if ( _image == null) {
+        return '';
+      }
+      else {
+        final storage = FirebaseStorage.instance;
+        TaskSnapshot snapshot = await storage
+            .ref()
+            .child('users')
+            .child('user[$uid]')
+            .child(uuid)
+            .child('BusinessCard')
+            .putFile(_image);
+        final String downloadUrl = await snapshot.ref.getDownloadURL();
+        return downloadUrl;
+      }
+    }
+  }
+
+
+
+
+  Future<int> showCupertinoBottomBar(context) {
+    //選択するためのボトムシートを表示
+    return showCupertinoModalPopup<int>(
+        context: context,
+        builder: (BuildContext context) {
+          return CupertinoActionSheet(
+            message: Text('写真をアップロードしますか？'),
+            actions: <Widget>[
+              CupertinoActionSheetAction(
+                child: Text(
+                  'カメラで撮影',
+                ),
+                onPressed: () {
+                  Navigator.pop(context, 0);
+                },
+              ),
+              CupertinoActionSheetAction(
+                child: Text(
+                  'アルバムから選択',
+                ),
+                onPressed: () {
+                  Navigator.pop(context, 1);
+                },
+              ),
+            ],
+            cancelButton: CupertinoActionSheetAction(
+              child: const Text('キャンセル'),
+              onPressed: () {
+                Navigator.pop(context, 2);
+              },
+              isDefaultAction: true,
+            ),
+          );
+        }
+    );
+  }
+
+  void showBottomSheet(BuildContext context, uuid,int index) async {
+    //ボトムシートから受け取った値によって操作を変える
+    final result = await showCupertinoBottomBar(context);
+    File imageFile;
+    if (result == 0) {
+      imageFile = await ImageUploadEdit(ImageSource.camera).getImageFromDevice();
+    } else if (result == 1) {
+      imageFile = await ImageUploadEdit(ImageSource.gallery).getImageFromDevice();
+    }
+    if(index==0){
+      _image = imageFile;
+      imageUrlEdit= await _uploadImage(_image,uuid,index);
+      notifyListeners();
+    }else if(index==1){
+      _imageBusinessCard=imageFile;
+      imageUrlEditBusinessCard= await _uploadImage(_imageBusinessCard, uuid, index);
+      notifyListeners();
+    }
+  }
 
 
   void calenderAddEdit(DateTime date,String content,String uuid){
@@ -134,7 +251,6 @@ class ListChangeFirebaseEdit extends ChangeNotifier{
     }
   }
   void listUpdate(String id,Map<String, TextEditingController> map ){
-
     stream.doc(id).update({
       '名前':map['名前'].text,
       '所属':map['所属'].text,
@@ -145,6 +261,7 @@ class ListChangeFirebaseEdit extends ChangeNotifier{
       'メモ2':map['メモ2'].text,
       'メモ3':map['メモ3'].text,
       'imageUrl':imageUrlEdit,
+      'imageUrlBusinessCard':imageUrlEditBusinessCard,
     });
   }
 }
@@ -229,20 +346,14 @@ class ImageFormEdit extends StatelessWidget{
   ImageFormEdit(this.imageUrl,this.uid);
   @override
   Widget build(BuildContext context) {
-    imageUrlEdit=imageUrl;
     return Consumer(builder: (context,watch,child){
-      return (watch(_imageProvider)._image == null && imageUrlEdit==null || imageUrlEdit=='') ?
+      return (watch(_listFirebaseEditProvider)._image == null && imageUrl==null || imageUrl=='') ?
       IconButton(
         icon: Icon(Icons.account_circle),
         color: Colors.grey,
         iconSize: 120.0,
         onPressed: () async{
-          try {
-            watch(_listFirebaseEditProvider).nameCheck(context.read(_textControlEditProvider).nameController.text);
-            watch(_imageProvider).showBottomSheet(context,uid);
-          }catch(e){
-            watch(_imageProvider).alertFunc(context, e);
-          }
+            watch(_listFirebaseEditProvider).showBottomSheet(context,uid,0);
         },
       )
           : Column(
@@ -250,18 +361,13 @@ class ImageFormEdit extends StatelessWidget{
           SizedBox(
             height: 20,
           ),
-               (watch(_imageProvider)._image != null ) ? ClipOval(
+               (watch(_listFirebaseEditProvider)._image != null ) ? ClipOval(
                       child: GestureDetector(
                         onTap: (){
-                         try {
-                         watch(_listFirebaseEditProvider).nameCheck(context.read(_textControlEditProvider).nameController.text);
-                         watch(_imageProvider).showBottomSheet(context,context.read(_listFirebaseEditProvider).stream);
-                        }catch(e){
-                             watch(_imageProvider).alertFunc(context,e);
-                             }
+                         watch(_listFirebaseEditProvider).showBottomSheet(context,uid,0);
                            },
                              child: Image.memory(
-                                  watch(_imageProvider)._image.readAsBytesSync(),
+                                  watch(_listFirebaseEditProvider)._image.readAsBytesSync(),
                                   width: 100,
                                   height: 100,
                                   fit: BoxFit.fill,
@@ -270,10 +376,10 @@ class ImageFormEdit extends StatelessWidget{
           ):ClipOval(
             child: GestureDetector(
                    onTap: (){
-                       watch(_imageProvider).showBottomSheet(context,uid);
+                       watch(_listFirebaseEditProvider).showBottomSheet(context,uid,0);
                    },
                    child: Image.network(
-                     imageUrlEdit,
+                     imageUrl,
                      width: 100,
                      height: 100,
                      fit: BoxFit.fill,
@@ -287,105 +393,123 @@ class ImageFormEdit extends StatelessWidget{
   }
 }
 
-
-
-class ImageFuncEdit extends ChangeNotifier{
-
-  File _image;
-  String imageName;
-  final picker = ImagePicker();
-
-  dynamic alertFunc(context,e){
-    showDialog(
-        context: context,
-        builder: (BuildContext context){
-          return AlertDialog(
-            title: Text(e.toString()),
-            actions: <Widget>[
-              TextButton(
-                  onPressed: (){
-                    Navigator.pop(context);
-                  },
-                  child: Text('OK')
-              ),
-            ],
-          );
-        }
-    );
-  }
-
-  Future<String> _uploadImage(_image,uuid) async {
-    if ( _image == null) {
-      return '';
-    }
-    else {
-        final storage = FirebaseStorage.instance;
-        TaskSnapshot snapshot = await storage
-            .ref()
-            .child('users')
-            .child('user[$uid]')
-            .child(uuid)
-            .child('icon')
-            .putFile(_image);
-        final String downloadUrl = await snapshot.ref.getDownloadURL();
-        return downloadUrl;
-      }
-      }
-
-
-
-
-  Future<int> showCupertinoBottomBar(context) {
-    //選択するためのボトムシートを表示
-    return showCupertinoModalPopup<int>(
-        context: context,
-        builder: (BuildContext context) {
-          return CupertinoActionSheet(
-            message: Text('写真をアップロードしますか？'),
-            actions: <Widget>[
-              CupertinoActionSheetAction(
-                child: Text(
-                  'カメラで撮影',
-                ),
-                onPressed: () {
-                  Navigator.pop(context, 0);
-                },
-              ),
-              CupertinoActionSheetAction(
-                child: Text(
-                  'アルバムから選択',
-                ),
-                onPressed: () {
-                  Navigator.pop(context, 1);
-                },
-              ),
-            ],
-            cancelButton: CupertinoActionSheetAction(
-              child: const Text('キャンセル'),
-              onPressed: () {
-                Navigator.pop(context, 2);
-              },
-              isDefaultAction: true,
+class ImageFormEditBusinessCard extends StatelessWidget{
+  String imageUrlBusinessCard;
+  String uid;
+  ImageFormEditBusinessCard(this.imageUrlBusinessCard,this.uid);
+  @override
+  Widget build(BuildContext context) {
+    return Consumer(builder: (context,watch,child){
+      return (watch(_listFirebaseEditProvider)._imageBusinessCard == null && imageUrlBusinessCard==null || imageUrlBusinessCard=='') ?
+      IconButton(
+        icon: Icon(Icons.account_circle),
+        color: Colors.grey,
+        iconSize: 120.0,
+        onPressed: () async{
+            watch(_listFirebaseEditProvider).showBottomSheet(context,uid,1);
+        },
+      )
+          : Column(
+           children: [
+            SizedBox(
+            height: 20,
             ),
-          );
-        }
-    );
-  }
-
-  void showBottomSheet(context,uuid) async {
-    //ボトムシートから受け取った値によって操作を変える
-    final result = await showCupertinoBottomBar(context);
-    File imageFile;
-    if (result == 0) {
-      imageFile = await ImageUploadEdit(ImageSource.camera).getImageFromDevice();
-    } else if (result == 1) {
-      imageFile = await ImageUploadEdit(ImageSource.gallery).getImageFromDevice();
+             (watch(_listFirebaseEditProvider)._imageBusinessCard != null ) ? GestureDetector(
+              onTap: (){
+               watch(_listFirebaseEditProvider).showBottomSheet(context,uid,1);
+              },
+              child: Image.memory(
+             watch(_listFirebaseEditProvider)._imageBusinessCard.readAsBytesSync(),
+             width: 150,
+             height: 100,
+             fit: BoxFit.fill,
+              ),
+            ):GestureDetector(
+              onTap: (){
+              watch(_listFirebaseEditProvider).showBottomSheet(context,uid,1);
+              },
+              child: Image.network(
+              imageUrlBusinessCard,
+              width: 150,
+              height: 100,
+              fit: BoxFit.fill,
+              ),
+            )
+        ],
+      );
     }
-    _image = imageFile;
-    imageUrlEdit= await _uploadImage(_image,uuid);
-    notifyListeners();
+    );
   }
 }
+class ImageTabEdit extends StatefulWidget{
+  String imageUrl;
+  String imageUrlBusinessCard;
+  String uid;
+  ImageTabEdit(this.imageUrl,this.imageUrlBusinessCard,this.uid);
+  @override
+  _ImageTabEdit createState()=>_ImageTabEdit(imageUrl,imageUrlBusinessCard,uid);
+
+}
+
+class _ImageTabEdit extends State<ImageTabEdit> with TickerProviderStateMixin{
+  String imageUrl;
+  String imageUrlBusinessCard;
+  String uid;
+  _ImageTabEdit(this.imageUrl,this.imageUrlBusinessCard,this.uid);
+
+  final List<Tab> tabs = <Tab>[
+    Tab(
+      text: 'アイコン',
+    ),
+    Tab(
+      text: "名刺",
+    ),
+  ];
+
+  TabController _tabController;
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: tabs.length, vsync: this);
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer(
+        builder: (context,watch,child){
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                TabBar(
+                  tabs: tabs,
+                  unselectedLabelColor: Colors.grey,
+                  controller: _tabController,
+                  indicatorColor: Colors.blue,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicatorWeight: 2,
+                  indicatorPadding: EdgeInsets.symmetric(horizontal: 18.0,
+                      vertical: 8),
+                  labelColor: Colors.black,
+                ),
+                LimitedBox(
+                  maxHeight: 170,
+                  child: TabBarView(
+                      controller: _tabController,
+                      children:[
+                        ImageFormEdit(imageUrl, uid),
+                        ImageFormEditBusinessCard(imageUrlBusinessCard, uid),
+                      ]
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
+  }
+}
+
+
 
 class ImageUploadEdit {
   ImageUploadEdit(this.inputSource, {this.inputQuality = 50});

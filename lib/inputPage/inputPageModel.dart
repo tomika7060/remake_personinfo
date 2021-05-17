@@ -22,18 +22,6 @@ final _datePickProvider=ChangeNotifierProvider.autoDispose(
       (ref) => DatePick(),
 );
 
-final tabTypeProvider =StateProvider.autoDispose<TabWidgetType>((ref) => TabWidgetType.ImageForm);
-
-enum TabWidgetType{
-  ImageForm,
-  ImageFormBusiness,
-}
-
-class TabInfo {
-  String label;
-  Widget widget;
-  TabInfo(this.label, this.widget);
-}
 
 class TextForm extends StatelessWidget{
   String category;
@@ -114,8 +102,10 @@ class TextFormMultiline extends StatelessWidget{
 
 class ListChangeFirebase extends ChangeNotifier{
   File _image;
+  File _imageBusinessCard;
   String imageName;
   String imageUrl;
+  String imageUrlBusinessCard;
   final picker = ImagePicker();
   var uuid=Uuid().v4();
 
@@ -145,16 +135,18 @@ class ListChangeFirebase extends ChangeNotifier{
     }
   }
 
-  void storageDelete(uuid)async{
+  void storageDelete(uuid,int index)async{
+    List<String> category=['icon','BusinessCard'];
     final storage = FirebaseStorage.instance;
     storage
         .ref()
         .child('users')
         .child('user[$uid]')
         .child(uuid)
-        .child('icon')
+        .child(category[index])
         .delete();
   }
+
 
 
   void listAdd (Map<String, TextEditingController> map ){
@@ -169,6 +161,7 @@ class ListChangeFirebase extends ChangeNotifier{
         'メモ2':map['メモ2'].text,
         'メモ3':map['メモ3'].text,
         'imageUrl':(imageUrl==null) ? '' : imageUrl,
+        'imageUrlBusinessCard':(imageUrlBusinessCard==null) ? '':imageUrlBusinessCard,
         'CreatedAt':Timestamp.now(),
         'uuid':uuid,
     });
@@ -197,11 +190,12 @@ class ListChangeFirebase extends ChangeNotifier{
     );
   }
 
-  Future<String> _uploadImage(_image,name) async {
-    if ( _image == null) {
-      return '';
-    }
-    else {
+  Future<String> _uploadImage(File _image,int index) async {
+    if(index==1) {
+      if (_image == null) {
+        return '';
+      }
+      else {
         final storage = FirebaseStorage.instance;
         TaskSnapshot snapshot = await storage
             .ref()
@@ -212,7 +206,25 @@ class ListChangeFirebase extends ChangeNotifier{
             .putFile(_image);
         final String downloadUrl = await snapshot.ref.getDownloadURL();
         return downloadUrl;
+      }
+    }else if(index==2){
+      if (_image == null) {
+        return '';
+      }
+      else {
+        final storage = FirebaseStorage.instance;
+        TaskSnapshot snapshot = await storage
+            .ref()
+            .child('users')
+            .child('user[$uid]')
+            .child(uuid)
+            .child('BusinessCard')
+            .putFile(_image);
+        final String downloadUrl = await snapshot.ref.getDownloadURL();
+        return downloadUrl;
+      }
     }
+    return '';
   }
 
   Future<int> showCupertinoBottomBar(context) {
@@ -252,7 +264,7 @@ class ListChangeFirebase extends ChangeNotifier{
     );
   }
 
-  void showBottomSheet(context,name) async {
+  void showBottomSheet(BuildContext context,int index) async {
     //ボトムシートから受け取った値によって操作を変える
     final result = await showCupertinoBottomBar(context);
     File imageFile;
@@ -261,9 +273,16 @@ class ListChangeFirebase extends ChangeNotifier{
     } else if (result == 1) {
       imageFile = await ImageUpload(ImageSource.gallery).getImageFromDevice();
     }
+    if(index==1){
     _image = imageFile;
-    imageUrl= await _uploadImage(_image,name);
+    imageUrl= await _uploadImage(_image,1);
     notifyListeners();
+    }
+    else if(index==2){
+      _imageBusinessCard = imageFile;
+      imageUrlBusinessCard= await _uploadImage(_imageBusinessCard,2);
+      notifyListeners();
+    }
   }
 }
 
@@ -335,8 +354,13 @@ class TextControl extends ChangeNotifier {
   }
 }
 //↓画像関係
+class ImageTab extends StatefulWidget{
+  @override
+  _ImageTab createState()=>_ImageTab();
 
-class ImageTab extends StatelessWidget{
+}
+
+class _ImageTab extends State<ImageTab> with TickerProviderStateMixin{
 
   final List<Tab> tabs = <Tab>[
     Tab(
@@ -347,23 +371,44 @@ class ImageTab extends StatelessWidget{
     ),
   ];
 
+  TabController _tabController;
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: tabs.length, vsync: this);
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Consumer(
         builder: (context,watch,child){
-          return Column(
-            children: [
-              TabBar(
-                tabs: tabs,
-                unselectedLabelColor: Colors.grey,
-                indicatorColor: Colors.blue,
-                indicatorSize: TabBarIndicatorSize.tab,
-                indicatorWeight: 2,
-                indicatorPadding: EdgeInsets.symmetric(horizontal: 18.0,
-                    vertical: 8),
-                labelColor: Colors.black,
-              ),
-            ],
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                TabBar(
+                  tabs: tabs,
+                  unselectedLabelColor: Colors.grey,
+                  controller: _tabController,
+                  indicatorColor: Colors.blue,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicatorWeight: 2,
+                  indicatorPadding: EdgeInsets.symmetric(horizontal: 18.0,
+                      vertical: 8),
+                  labelColor: Colors.black,
+                ),
+                LimitedBox(
+                  maxHeight: 170,
+                  child: TabBarView(
+                    controller: _tabController,
+                      children:[
+                        ImageForm(),
+                        ImageFormBusiness()
+                      ]
+                  ),
+                ),
+              ],
+            ),
           );
         });
   }
@@ -373,16 +418,15 @@ class ImageForm extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context,watch,child){
-      return (watch(_listFirebaseProvider)._image == null) ?
+      return Column(
+       children:[
+         (watch(_listFirebaseProvider)._image == null) ?
       IconButton(
       icon: Icon(Icons.account_circle),
       color: Colors.grey,
       iconSize: 120.0,
       onPressed: () async{
-          watch(_listFirebaseProvider).showBottomSheet(context, context
-              .read(_textControlProvider)
-              .nameController
-              .text);
+          watch(_listFirebaseProvider).showBottomSheet(context,1);
         },
       )
         : Column(
@@ -393,15 +437,7 @@ class ImageForm extends StatelessWidget{
         ClipOval(
           child: GestureDetector(
             onTap: (){
-              try {
-                watch(_listFirebaseProvider).nameCheck(context.read(_textControlProvider).nameController.text);
-                watch(_listFirebaseProvider).showBottomSheet(context, context
-                    .read(_textControlProvider)
-                    .nameController
-                    .text);
-              }catch(e){
-                watch(_listFirebaseProvider).alertFunc(context,e);
-              }
+                watch(_listFirebaseProvider).showBottomSheet(context,1);
               },
             child: Image.memory(
               watch(_listFirebaseProvider)._image.readAsBytesSync(),
@@ -412,6 +448,13 @@ class ImageForm extends StatelessWidget{
           ),
         ),
       ],
+      ),
+      const SizedBox(height: 10,),
+      Text("プロフィール",
+      style: TextStyle(
+      fontWeight: FontWeight.bold,
+      ),)
+       ]
       );
     }
     );
@@ -422,45 +465,41 @@ class ImageFormBusiness extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context,watch,child){
-      return (watch(_listFirebaseProvider)._image == null) ?
+      return Column(
+      children:[
+        (watch(_listFirebaseProvider)._imageBusinessCard == null) ?
       IconButton(
-        icon: Icon(Icons.account_circle),
+        icon: Icon(Icons.account_box_sharp),
         color: Colors.grey,
         iconSize: 120.0,
         onPressed: () async{
-          watch(_listFirebaseProvider).showBottomSheet(context, context
-              .read(_textControlProvider)
-              .nameController
-              .text);
+          watch(_listFirebaseProvider).showBottomSheet(context,2);
         },
       )
           : Column(
-        children: [
-          SizedBox(
+           children: [
+            SizedBox(
             height: 20,
           ),
-          ClipOval(
-            child: GestureDetector(
+            GestureDetector(
               onTap: (){
-                try {
-                  watch(_listFirebaseProvider).nameCheck(context.read(_textControlProvider).nameController.text);
-                  watch(_listFirebaseProvider).showBottomSheet(context, context
-                      .read(_textControlProvider)
-                      .nameController
-                      .text);
-                }catch(e){
-                  watch(_listFirebaseProvider).alertFunc(context,e);
-                }
+                  watch(_listFirebaseProvider).showBottomSheet(context,2);
               },
               child: Image.memory(
-                watch(_listFirebaseProvider)._image.readAsBytesSync(),
-                width: 100,
+                watch(_listFirebaseProvider)._imageBusinessCard.readAsBytesSync(),
+                width: 150,
                 height: 100,
                 fit: BoxFit.fill,
               ),
             ),
-          ),
         ],
+      ),
+
+          const SizedBox(height: 10,),
+           Text("名刺",
+               style: TextStyle(
+               fontWeight: FontWeight.bold,
+               )) ]
       );
     }
     );

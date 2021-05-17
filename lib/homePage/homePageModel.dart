@@ -79,7 +79,7 @@ class ListFireStore extends StatelessWidget{
         });
   }
 
-  alertShow(context,document){
+  alertShow(BuildContext context,DocumentSnapshot document){
     showDialog(
         context: context,
         builder: (BuildContext context){
@@ -90,8 +90,10 @@ class ListFireStore extends StatelessWidget{
                   onPressed: (){
                    context.read(_listFirebaseProvider).listDelete(document);
                    if(document['imageUrl']!='') {
-                     context.read(_listFirebaseProvider).storageDelete(
-                         document['uuid']);
+                     context.read(_listFirebaseProvider).storageDelete(document['uuid'],0);
+                   }
+                   if(document['imageUrlBusinessCard']!=""){
+                     context.read(_listFirebaseProvider).storageDelete(document['uuid'],1);
                    }
                    Navigator.pop(context);
                   },
