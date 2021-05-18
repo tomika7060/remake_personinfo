@@ -251,18 +251,56 @@ class ListChangeFirebaseEdit extends ChangeNotifier{
     }
   }
   void listUpdate(String id,Map<String, TextEditingController> map ){
-    stream.doc(id).update({
-      '名前':map['名前'].text,
-      '所属':map['所属'].text,
-      '電話番号':map['電話番号'].text,
-      'メールアドレス':map['メールアドレス'].text,
-      '趣味':map['趣味'].text,
-      'メモ1':map['メモ1'].text,
-      'メモ2':map['メモ2'].text,
-      'メモ3':map['メモ3'].text,
-      'imageUrl':imageUrlEdit,
-      'imageUrlBusinessCard':imageUrlEditBusinessCard,
-    });
+    if(imageUrlEdit != null && imageUrlEdit != '' && imageUrlEditBusinessCard != null && imageUrlEditBusinessCard != ''){
+      stream.doc(id).update({
+        '名前':map['名前'].text,
+        '所属':map['所属'].text,
+        '電話番号':map['電話番号'].text,
+        'メールアドレス':map['メールアドレス'].text,
+        '趣味':map['趣味'].text,
+        'メモ1':map['メモ1'].text,
+        'メモ2':map['メモ2'].text,
+        'メモ3':map['メモ3'].text,
+        'imageUrl':imageUrlEdit,
+        'imageUrlBusinessCard':imageUrlEditBusinessCard,
+      });
+    }else if(imageUrlEdit!=null && imageUrlEdit!='' && imageUrlEditBusinessCard==null && imageUrlEditBusinessCard==''){
+      stream.doc(id).update({
+        '名前':map['名前'].text,
+        '所属':map['所属'].text,
+        '電話番号':map['電話番号'].text,
+        'メールアドレス':map['メールアドレス'].text,
+        '趣味':map['趣味'].text,
+        'メモ1':map['メモ1'].text,
+        'メモ2':map['メモ2'].text,
+        'メモ3':map['メモ3'].text,
+        'imageUrl':imageUrlEdit,
+      });
+    }else if(imageUrlEdit==null && imageUrlEdit=='' && imageUrlEditBusinessCard!=null && imageUrlEditBusinessCard!=''){
+      stream.doc(id).update({
+        '名前':map['名前'].text,
+        '所属':map['所属'].text,
+        '電話番号':map['電話番号'].text,
+        'メールアドレス':map['メールアドレス'].text,
+        '趣味':map['趣味'].text,
+        'メモ1':map['メモ1'].text,
+        'メモ2':map['メモ2'].text,
+        'メモ3':map['メモ3'].text,
+        'imageUrlBusinessCard':imageUrlEditBusinessCard,
+      });
+    }else{
+      stream.doc(id).update({
+        '名前':map['名前'].text,
+        '所属':map['所属'].text,
+        '電話番号':map['電話番号'].text,
+        'メールアドレス':map['メールアドレス'].text,
+        '趣味':map['趣味'].text,
+        'メモ1':map['メモ1'].text,
+        'メモ2':map['メモ2'].text,
+        'メモ3':map['メモ3'].text,
+      });
+    }
+
   }
 }
 
@@ -420,7 +458,7 @@ class ImageFormEditBusinessCard extends StatelessWidget{
               },
               child: Image.memory(
              watch(_listFirebaseEditProvider)._imageBusinessCard.readAsBytesSync(),
-             width: 150,
+             width: 100,
              height: 100,
              fit: BoxFit.fill,
               ),
@@ -430,7 +468,7 @@ class ImageFormEditBusinessCard extends StatelessWidget{
               },
               child: Image.network(
               imageUrlBusinessCard,
-              width: 150,
+              width: 100,
               height: 100,
               fit: BoxFit.fill,
               ),
