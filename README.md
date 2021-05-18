@@ -1,17 +1,20 @@
-# widgetsampule
+# 名刺カレンダー
 
-A new Flutter application.
+flutterのアプリケーションです
 
-## Getting Started
+## 使い方
 
-This project is a starting point for a Flutter application.
+名刺と人間関係の管理と予定を管理できるアプリケーションがなかったので作りました。
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+使い方
+- 名前、所属、メアド、電話番号などの情報を入力できます。
+- 個人ページから予定、記録を追加できます。
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+
+
+
+　インストールは[こちら](https://play.google.com/store/apps/details?id=com.widgetsampule)
+
+
 # remake_personinfo
