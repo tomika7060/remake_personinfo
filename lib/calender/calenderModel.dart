@@ -67,6 +67,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return key.day * 1000000 + key.month * 10000 + key.year;
   }
 
+  Future<void> _onRefresh() async {
+    setState(() {
+      _future=getCalenderContents();
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -157,6 +163,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(builder: (context) => PersonalPage(event[3]))
+                                ).then((value){
+                                  setState(() {
+                                    _future=getCalenderContents();
+                                  });
+                                }
+
                                 );
                               },
                             ),

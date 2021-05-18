@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:widgetsampule/homePage/home.dart';
@@ -114,6 +115,12 @@ class ListChangeFirebase extends ChangeNotifier{
       .collection('friends');
   CollectionReference<Map<String, dynamic>> get stream =>_stream;
 
+  void calenderDelete(document){
+      print(document.id);
+      stream.doc(uuid).collection('Calender').doc(document.id).delete();
+      notifyListeners();
+  }
+
 
   void calenderAdd(date,content){
     print(uuid);
@@ -167,6 +174,7 @@ class ListChangeFirebase extends ChangeNotifier{
     });
   }
   void listDelete(document){
+    print(document.id);
     stream.doc(document.id)
         .delete();
   }
@@ -450,7 +458,7 @@ class ImageForm extends StatelessWidget{
       ],
       ),
       const SizedBox(height: 10,),
-      Text("プロフィール",
+          Text("プロフィール",
       style: TextStyle(
       fontWeight: FontWeight.bold,
       ),)
@@ -652,11 +660,33 @@ class CalenderList extends StatelessWidget{
                    return ListView(
                      shrinkWrap: true,
                        children: snapshot.data.docs.map((DocumentSnapshot document){
-                         return Card(
-                           child: ListTile(
-                             leading: Text(DateFormat('yyyy/MM/dd').format(document['日付'].toDate())),
-                             title: Text(document['内容']),
+                         return Slidable(
+                           key: Key(document['内容']),
+                           dismissal: SlidableDismissal(
+                             dragDismissible: false,
+                             child: SlidableDrawerDismissal(),
+                             dismissThresholds: <SlideActionType, double>{
+                               // 右dismissal(スワイプ)をキャンセルする(1.0にセットする)
+                               SlideActionType.secondary: 1.0
+                             },
                            ),
+                           actions: <Widget>[
+                             IconSlideAction(
+                               caption: 'Delete',
+                               color: Colors.red,
+                               icon: Icons.delete,
+                               onTap: () {
+                                 alertShow(context,document);
+                               },
+                             )
+                           ],
+                           child: Card(
+                             child: ListTile(
+                               leading: Text(DateFormat('yyyy/MM/dd').format(document['日付'].toDate())),
+                               title: Text(document['内容']),
+                             ),
+                           ),
+                           actionPane: SlidableScrollActionPane(),
                          );
                    }
                    ).toList()
@@ -666,6 +696,31 @@ class CalenderList extends StatelessWidget{
          );
        }
    );
+  }
+  alertShow(BuildContext context,DocumentSnapshot document){
+    showDialog(
+        context: context,
+        builder: (BuildContext context){
+          return AlertDialog(
+            title: Text('削除しますか?'),
+            actions: <Widget>[
+              TextButton(
+                  onPressed: (){
+                    context.read(_listFirebaseProvider).calenderDelete(document);
+                    Navigator.pop(context);
+                  },
+                  child: Text('はい')
+              ),
+              TextButton(
+                  onPressed: (){
+                    Navigator.pop(context);
+                  },
+                  child: Text('いいえ')
+              ),
+            ],
+          );
+        }
+    );
   }
 }
 
